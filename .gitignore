@@ -1,0 +1,26 @@
+# Author: Martin Zůbek
+# Date: 2026-03-26
+# Description: .gitignore for this Bachelors thesis project.
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+# VSCODE
+.vscode/
+
+# Build of the project
+external/
+id-card-forgery-detection.egg-info/
+
+# Testing folder
+tmp_test/
+
+# Submission zip file
+submission.zip
+
