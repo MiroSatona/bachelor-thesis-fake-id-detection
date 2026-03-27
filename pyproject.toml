@@ -1,0 +1,32 @@
+# Author: Martin Zůbek
+# Date: 2026-03-26
+# Description: pyproject.toml configuration for the Bachelor thesis project. # This file defines build system requirements and project metadata.
+
+# Build system configuration
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# Project metadata
+[project]
+name = "id-card-forgery-detection"
+version = "1.0.0"
+description = "Bachelor thesis"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "numpy",
+]
+
+# Setuptools configuration
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+# Egg-info configuration
+[tool.distutils.egg_info]
+egg_base = "meta_data"
+
+# Package discovery configuration
+[tool.setuptools.packages.find]
+where = ["src"]
