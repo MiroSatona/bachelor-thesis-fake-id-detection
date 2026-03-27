@@ -15,7 +15,8 @@ description = "Bachelor thesis"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "torch"
+    "torch",
+    "numpy",
 ]
 
 # Setuptools configuration
