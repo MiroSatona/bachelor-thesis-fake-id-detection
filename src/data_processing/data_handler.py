@@ -1,24 +1,33 @@
 """
 Author: Martin Zůbek
 Date: 2026-03-28
-File: data_splitter.py
-Description: This file defines DataHandler which is responsible for handling and operating with provided data for creation of dataset for training, validation, and test sets or for loading single identity document image for application.
+File: data_handler.py
+Description: This file defines DataHandler which is responsible for handling and operating with 
+provided data for creation of dataset for training, validation, and test sets or for loading single 
+identity document image for application.
 """
 from pathlib import Path
-from .dataset import Dataset
+
 from .data_loader import DataLoader
 from .data_splitter import DatasetSplitter
+from .dataset import Dataset
 from .identity_document import IdentityDocumentImage
+
 
 class DataHandler:
     """
-    Class responsible for handling and operating with provided data for creation of dataset for training, validation, and test sets or for loading single identity document image for application.
+    Class responsible for handling and operating with provided data for creation of dataset 
+    for training, validation and test sets or for loading single identity document image 
+    for application.
     
     Attributes:
         loader (DataLoader): An instance of DataLoader class for loading data from provided paths.
-        splitter (DatasetSplitter): An instance of DatasetSplitter class for splitting the dataset into training,validation, and test sets.
-        identity_documents (list[IdentityDocumentImage] | None): A list of IdentityDocumentImage objects representing the loaded dataset, or None if the dataset is not loaded.
-        dataset (Dataset | None): A Dataset object containing the training, validation, and test sets, or None if the dataset is not created.
+        splitter (DatasetSplitter): An instance of DatasetSplitter class for splitting the dataset 
+        into training,validation, and test sets.
+        identity_documents (list[IdentityDocumentImage] | None): A list of IdentityDocumentImage 
+        objects representing the loaded dataset, or None if the dataset is not loaded.
+        dataset (Dataset | None): A Dataset object containing the training, validation, and test 
+        sets, or None if the dataset is not created.
     """
     def __init__(self, data_path: Path) -> None:
         """
@@ -54,13 +63,16 @@ class DataHandler:
             None
             
         Returns:
-            IdentityDocumentImage: An instance of IdentityDocumentImage representing the loaded identity document image.
+            IdentityDocumentImage: An instance of IdentityDocumentImage representing 
+            the loaded identity document image.
         """
         return self.loader.load_single_identity_document()
 
     def get_dataset_for_training(self) -> Dataset:
         """
-        Method to get the dataset for training, validation, and test sets. If the dataset is not created yet, it will be created by splitting the loaded identity document images using the DatasetSplitter instance.
+        Method to get the dataset for training, validation, and test sets. If the dataset is not 
+        created, it will be created by splitting the loaded identity document images 
+        using the DatasetSplitter instance.
 
         Arguments:
             None
@@ -78,6 +90,8 @@ class DataHandler:
 
         # Create the dataset by splitting the loaded identity document images if it is not created
         if self.dataset is None:
-            self.dataset = self.splitter.split_identity_documents_for_dataset(self.identity_documents)
+            self.dataset = (
+                self.splitter.split_identity_documents_for_dataset(self.identity_documents)
+            )
 
         return self.dataset
