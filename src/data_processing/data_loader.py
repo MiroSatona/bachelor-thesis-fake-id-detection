@@ -8,10 +8,10 @@ dataset and creating IdentityDocumentImage instances for their internal represen
 
 from pathlib import Path
 
-from .constants import ATTACK_SUBSET, POSITIVE_SUBSET
-from .data_utils import DataUtils
-from .enums import AttackType, Label
-from .identity_document import IdentityDocumentImage
+from src.data_processing.constants import ATTACK_SUBSET, POSITIVE_SUBSET
+from src.data_processing.data_utils import DataUtils
+from src.data_processing.enums import AttackType, Label
+from src.data_processing.identity_document import IdentityDocumentImage
 
 
 class DataLoader:
