@@ -9,10 +9,10 @@ into training, validation, and test sets.
 import random
 from collections import defaultdict
 
-from .constants import DEFAULT_SPLIT_SEED, TRAIN_PERCENTAGE, VAL_PERCENTAGE
-from .dataset import Dataset
-from .enums import AttackType, Label
-from .identity_document import IdentityDocumentImage
+from src.data_processing.constants import DEFAULT_SPLIT_SEED, TRAIN_PERCENTAGE, VAL_PERCENTAGE
+from src.data_processing.dataset import Dataset
+from src.data_processing.enums import AttackType, Label
+from src.data_processing.identity_document import IdentityDocumentImage
 
 
 class DatasetSplitter:
