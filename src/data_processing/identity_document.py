@@ -10,7 +10,7 @@ or for the application.
 from dataclasses import dataclass
 from pathlib import Path
 
-from .enums import AttackType, DatasetSubset, Label
+from src.data_processing.enums import AttackType, DatasetSubset, Label
 
 
 @dataclass(frozen=True)
