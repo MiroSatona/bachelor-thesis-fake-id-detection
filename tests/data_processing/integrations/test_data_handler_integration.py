@@ -8,8 +8,7 @@ Description: Integration tests for the DataHandler class.
 from pathlib import Path
 
 from src.data_processing.data_handler import DataHandler
-from src.data_processing.dataset import IdentityDocumentImage
-from src.data_processing.dataset import Dataset
+from src.data_processing.dataset import Dataset, IdentityDocumentImage
 
 
 def test_data_handler_loads_and_splits_dataset(tmp_path: Path) -> None:
