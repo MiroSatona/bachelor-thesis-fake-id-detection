@@ -2,18 +2,22 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: data_loader.py
-Description: This file contains the DataLoader class for loading identity document images from the dataset and creating IdentityDocumentImage instances for their internal representation.
+Description: This file contains the DataLoader class for loading identity document images from the 
+dataset and creating IdentityDocumentImage instances for their internal representation.
 """
 
 from pathlib import Path
+
+from .constants import ATTACK_SUBSET, POSITIVE_SUBSET
 from .data_utils import DataUtils
-from .enums import Label, AttackType
+from .enums import AttackType, Label
 from .identity_document import IdentityDocumentImage
-from .constants import POSITIVE_SUBSET, ATTACK_SUBSET
+
 
 class DataLoader:
     """
-    Class rsponsible for loading identity document images from the dataset and creating IdentityDocumentImage instances for their internal representation.
+    Class rsponsible for loading identity document images from the dataset and creating 
+    IdentityDocumentImage instances for their internal representation.
 
     Attributes:
         data_path (Path): Path to the dataset or to a single identity document image.
@@ -32,18 +36,22 @@ class DataLoader:
 
     def load_single_identity_document(self) -> IdentityDocumentImage:
         """
-        Method for loading single identity document image and creating an IdentityDocumentImage instance for its internal representation.
+        Method for loading single identity document image and creating an IdentityDocumentImage 
+        instance for internal representation.
 
         Arguments:
             None
 
         Returns:
-            IdentityDocumentImage: An instance of the IdentityDocumentImage class representing the loaded identity document image
+            IdentityDocumentImage: An instance of the IdentityDocumentImage class representing 
+            the loaded identity document image.
         """
         
         # Check if the provided path exists
         if not self.data_path.exists():
-            raise FileNotFoundError(f"The provided identity document {self.data_path} does not exist.")
+            raise FileNotFoundError(
+                f"The provided identity document {self.data_path} does not exist."
+            )
         
         # Check if the provided path is a valid image file
         if not DataUtils.is_image(self.data_path):
@@ -59,13 +67,15 @@ class DataLoader:
         
     def load_dataset(self) -> list[IdentityDocumentImage]:
         """
-        Method for loading identity document images from the dataset and creating IdentityDocumentImage instances for their internal representation.
+        Method for loading identity document images from the dataset and creating 
+        IdentityDocumentImage instances for their internal representation.
 
         Arguments:
             None
 
         Returns:
-            list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing the loaded identity document images from the dataset.
+            list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing 
+            the loaded identity document images from the dataset.
         
         """
 
@@ -78,16 +88,20 @@ class DataLoader:
         if not positive_subset.exists() or not attack_subset.exists():
             raise FileNotFoundError(f"Subsets of the dataset not found in {self.data_path}.")
 
-        # Crating internal representation of the all dataset by loading positive and attack identity document images and creating IdentityDocumentImage instances for them and storing them in a list
+        # Load identity documents from both subsets into a single internal list.
         dataset: list[IdentityDocumentImage] = []
         dataset.extend(self.load_positive_identity_documents(positive_subset))
         dataset.extend(self.load_attack_identity_documents(attack_subset))
 
         return dataset
 
-    def load_positive_identity_documents(self, positive_subset: Path) -> list[IdentityDocumentImage]:
+    def load_positive_identity_documents(
+        self,
+        positive_subset: Path,
+    ) -> list[IdentityDocumentImage]:
         """
-        Method for loading positive identity document images and cerating IdentityDocumentImage instances for their internal representation.
+        Method for loading positive identity document images and cerating IdentityDocumentImage 
+        instances for their internal representation.
 
         positive/                      # positive_subset
         ├── fantasy_id                 # dataset_part
@@ -109,7 +123,8 @@ class DataLoader:
             positive_subset (Path): Path to the positive subset of the dataset.
 
         Returns:
-            list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing the loaded positive identity document images.
+            list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing 
+            the loaded positive identity document images.
         """
 
         # List for storing the loaded positive identity document images
@@ -146,7 +161,8 @@ class DataLoader:
                 
     def load_attack_identity_documents(self, attack_subset: Path) -> list[IdentityDocumentImage]:
         """
-        Method for loading attack identity document images and cerating IdentityDocumentImage instances for their internal representation.
+        Method for loading attack identity document images and cerating IdentityDocumentImage 
+        instances for their internal representation.
 
 
         ├── attack                                                        # attack_subset
@@ -175,7 +191,8 @@ class DataLoader:
             attack_subset (Path): Path to the attack subset of the dataset.
 
         Returns:
-                list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing the loaded attack identity document images.
+                list[IdentityDocumentImage]: A list of IdentityDocumentImage instances representing 
+                the loaded attack identity document images.
         """
 
         # List for storing the loaded attack identity document images        
