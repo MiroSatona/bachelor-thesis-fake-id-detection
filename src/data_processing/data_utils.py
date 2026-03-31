@@ -8,8 +8,8 @@ are loading from provided paths.
 
 from pathlib import Path
 
-from .constants import IMAGE_EXTENSIONS
-from .enums import AttackType
+from src.data_processing.constants import IMAGE_EXTENSIONS
+from src.data_processing.enums import AttackType
 
 
 class DataUtils:
