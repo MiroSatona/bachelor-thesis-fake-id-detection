@@ -8,10 +8,10 @@ identity document image for application.
 """
 from pathlib import Path
 
-from .data_loader import DataLoader
-from .data_splitter import DatasetSplitter
-from .dataset import Dataset
-from .identity_document import IdentityDocumentImage
+from src.data_processing.data_loader import DataLoader
+from src.data_processing.data_splitter import DatasetSplitter
+from src.data_processing.dataset import Dataset
+from src.data_processing.identity_document import IdentityDocumentImage
 
 
 class DataHandler:
