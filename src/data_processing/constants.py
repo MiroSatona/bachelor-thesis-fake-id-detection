@@ -2,7 +2,8 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: constants.py
-Description: This file contains constant values for the proccessing provided data for training or for application.
+Description: This file contains constant values for the proccessing provided data for training or 
+             for application.
 """
 
 # Subset of the provided dataset with positive samples
