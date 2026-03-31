@@ -2,16 +2,20 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: data_utils.py
-Description: This file defines DataUtils class with static methods for data processing, while they are loading from provided paths.
+Description: This file defines DataUtils class with static methods for data processing, while they 
+are loading from provided paths.
 """
 
 from pathlib import Path
-from .enums import AttackType
+
 from .constants import IMAGE_EXTENSIONS
+from .enums import AttackType
+
 
 class DataUtils:
     """
-    DataUtils class that provides static method for data processing, while they are loading from provided paths.
+    DataUtils class that provides static method for data processing, while they are loading 
+    from provided paths.
 
     Attributes:
         None
@@ -20,7 +24,8 @@ class DataUtils:
     @staticmethod
     def is_image(path: Path) -> bool:
         """
-        Static method for checking if the provided path is an image file and if it has a valid image extension.
+        Static method for checking if the provided path is an image file and if it has 
+        a valid image extension.
 
         Arguments:
             path (Path): The path to the image file.
@@ -33,7 +38,8 @@ class DataUtils:
     @staticmethod
     def parse_attack_type(folder_name: str) -> AttackType | None:
         """
-        Static method for parsing the attack type from the folder name. In detaset for this project, the folder for attack looks like:
+        Static method for parsing the attack type from the folder name. In detaset for this project,
+        the folder for attack looks like:
 
         .
         ├── attack
@@ -58,13 +64,16 @@ class DataUtils:
         │   │       ├── chinese2-flickr_F_31998955273_5516f4db28_h.jpg
         │   │       ├── chinese2-flickr_F_32689517821_bfacb0e1ba_h.jpg
 
-        The method will parse the attack type from the folder name, which is one of the following: both, both_(everything), photo_only, text_only. For eliminating the case sensitivity problem, the method will convert the folder name to lower case before parsing.
+        The method will parse the attack type from the folder name, which is one of the following: 
+        both, both_(everything), photo_only, text_only. For eliminating the case sensitivity 
+        problem, the method will convert the folder name to lower case before parsing.
 
         Arguments:
             folder_name (str): The name of the folder to parse the attack type from.
 
         Returns:
-            AttackType | None: The parsed attack type, or None if the folder name does not supported attack type.
+            AttackType | None: The parsed attack type, or None if the folder name does not 
+            supported attack type.
         """
         name: str = folder_name.lower()
 
