@@ -2,16 +2,20 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: dataset.py
-Description: This file defines the Dataset dataclass, which encapsulates the training, validation, and testing data for splitted identity document images.
+Description: This file defines the Dataset dataclass, which encapsulates the training, validation, 
+and testing data for splitted identity document images.
 """
 
 from dataclasses import dataclass
+
 from .identity_document import IdentityDocumentImage
+
 
 @dataclass(frozen=True)
 class Dataset:
     """
-    Dataset dataclass that holds the training, validation, and testing data for identity document images.
+    Dataset dataclass that holds the training, validation, and testing data
+    for identity document images.
     
     Attributes:
         train_data (list[IdentityDocumentImage]): A list of identity document images for training.
