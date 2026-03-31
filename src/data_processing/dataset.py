@@ -8,7 +8,7 @@ and testing data for splitted identity document images.
 
 from dataclasses import dataclass
 
-from .identity_document import IdentityDocumentImage
+from src.data_processing.identity_document import IdentityDocumentImage
 
 
 @dataclass(frozen=True)
