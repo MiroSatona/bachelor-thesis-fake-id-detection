@@ -123,6 +123,8 @@ clean:
 	@rm -rf "$(ENV_DIR)"
 	@rm -rf "$(EXTERNAL_DIR)"
 	@rm -rf "$(PYTEST_CACHE_DIR)"
+	@rm -rf .mypy_cache
+	@rm -rf .ruff_cache
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
 .PHONY: build zip clean test_data_processing ruff_check ruff_fix mypy_check
