@@ -13,13 +13,13 @@ import numpy
 import numpy.typing as npt
 import torch
 from PIL import Image
-from src.extractors.constans import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_SRC, TRUFOR_STR
 
 from external.TruFor.TruFor_train_test.lib.config import config as trufor_config
 from external.TruFor.TruFor_train_test.lib.config import update_config
 from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
+from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_SRC, TRUFOR_STR
 
 
 class TruForExtractor(BaseExtractor):
