@@ -6,6 +6,7 @@ Description: This file contains the enums for the Extractor classes.
 """
 from enum import Enum
 
+
 class DeviceType(str,Enum):
     CPU = "cpu"
     CUDA = "cuda"
