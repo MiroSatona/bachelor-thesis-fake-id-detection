@@ -13,6 +13,7 @@ import numpy
 import numpy.typing as npt
 import torch
 
+from external.IML_VIT.iml_vit_model import iml_vit_model
 from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.constants import DEFAULT_USE_GPU, EXTRACTORS_DIR_STR
@@ -48,7 +49,7 @@ class BaseExtractor(ABC):
         )
         self.root_dir: Path = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR
         self.src_dir: Path = self.root_dir
-        self.extractor_model: EncoderDecoder | None = None
+        self.extractor_model: EncoderDecoder | iml_vit_model | None = None
 
     @abstractmethod
     def load_extractor(self) -> None:
