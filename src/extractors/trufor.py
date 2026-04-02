@@ -19,7 +19,7 @@ from external.TruFor.TruFor_train_test.lib.config import update_config
 from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
-from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_SRC, TRUFOR_STR
+from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_NAME, TRUFOR_SRC
 
 
 class TruForExtractor(BaseExtractor):
@@ -40,12 +40,25 @@ class TruForExtractor(BaseExtractor):
         # Create the instance of the BaseExtractor class
         super().__init__(gpu)
         # Set root directory of the TruFor
-        self.root_dir: Path = self.root_dir / TRUFOR_STR
+        self.root_dir: Path = self.root_dir / TRUFOR_NAME
         # Set source directory of the TruFor
         self.src_dir: Path = self.root_dir / TRUFOR_SRC
     
     def load_extractor(self) -> None:
+        """
+        Method for loading the TruFor extractor model. If the model is already loaded, 
+        it does nothing.
         
+        Arguments:
+            None
+
+        Raise:
+            RuntimeError: If the source directory of the TruFor does not exist 
+            or if the extractor model cannot be loaded. 
+
+        Returns:
+            None
+        """
         # Load the extractor model if it is not loaded
         if self.extractor_model is not None:
             return
@@ -57,9 +70,11 @@ class TruForExtractor(BaseExtractor):
         # Configure the path to the TruFor configuration file
         update_config(trufor_config, str(TRUFOR_CONFIG))
 
-        # Get the model from the TruFor repository and move it to the device
+        # Get the model from the TruFor repository
         self.extractor_model = EncoderDecoder(cfg=trufor_config)
+        # Move the model to the device
         self.extractor_model.to(self.device)
+        # Set the model to evaluation mode
         self.extractor_model.eval()
     
     
@@ -87,6 +102,7 @@ class TruForExtractor(BaseExtractor):
         # TruFor needs this normalization, because the the NoisePrint++ was trained like this.
         # REF: external/TruFor/TruFor_train_test/lib/models/cmx/encoders/builder_np_conf.py, 
         #      On the line 265
+        #      (App must be builded for get code which is referenced)
         noiseprint_convert: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 255.0
         )
@@ -115,7 +131,10 @@ class TruForExtractor(BaseExtractor):
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation 
             of the identity document image.
-        
+
+        Raise:
+            RuntimeError: If the extractor model cannot be loaded.
+
         Returns:
             npt.NDArray[numpy.float32]: The embedding vector with shape (512,) and dtype float32.
         """
