@@ -19,7 +19,7 @@ MMFUSION_NAME: str = "MMFusion"
 # Name of the EdgeDoc
 EDGEDOC_NAME: str = "EdgeDoc"
 # Name of the IML-ViT
-IML_VIT_NAME: str = "IML-ViT"
+IML_VIT_NAME: str = "IML_VIT"
 
 # Dictionary with the names of the extractors and with URLs for downloading
 EXTRACTORS: dict[str, str] = {
@@ -44,7 +44,7 @@ def get_extractor(extractors_directory: Path, extractor_name: str, extractor_url
     Returns:
         None
     """
-
+    
     # Get path for the code of the dowloaded extractor
     extractor_path = extractors_directory / extractor_name
 
