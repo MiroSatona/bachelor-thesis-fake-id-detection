@@ -37,17 +37,17 @@ EXTRACTORS: dict[str, str] = {
 # String with the URL for downloading the pretrained weights of the IML-ViT
 IML_VIT_WEIGHTS_URL: str = "https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth"
 # Path where the pretrained weights of the IML-ViT will be downloaded
-IML_VIT_DOWNLOAD_PATH: str = "external/IML_VIT/pretrained-weights/mae_pretrain_vit_base.pth"
+IML_VIT_DOWNLOAD_PATH: Path = Path("external/IML_VIT/pretrained-weights/mae_pretrain_vit_base.pth")
 
 ############################# MMFusion specific constants ##########################################
 # URL for downloading the MMFusion checkpoints
 MMFUSION_CKPT_URL: str = "https://drive.google.com/drive/folders/1P1efXjVmYltZ7zWT-m6WoIlZgh9R_kAg"
 # Path where the MMFusion checkpoints will be downloaded
-MMFUSION_CKPT_DOWNLOAD_PATH: str = "external/MMFusion/ckpt/"
+MMFUSION_CKPT_DOWNLOAD_PATH: Path = Path("external/MMFusion/ckpt")
 # URL for downloading the MMFusion pretrained models
 MMFUSION_PRETRAINED_URL: str = "https://drive.google.com/drive/folders/1eTLcCZWqF-VFKayrbl0HPKzvEkThUcok"
 # Path where the MMFusion pretrained models will be downloaded
-MMFUSION_PRETRAINED_DOWNLOAD_PATH: str = "external/MMFusion/pretrained/"
+MMFUSION_PRETRAINED_DOWNLOAD_PATH: Path = Path("external/MMFusion/pretrained")
 
 
 def reorganize_download(goal_directory: Path, downloaded_directory_name: str) -> None:
@@ -122,26 +122,26 @@ def get_extractor(extractors_directory: Path, extractor_name: str, extractor_url
     if extractor_name == IML_VIT_NAME:
         print(f"[INFO] Downloading IML-ViT weights from {IML_VIT_WEIGHTS_URL}...")
         subprocess.run(
-            ["wget", IML_VIT_WEIGHTS_URL, "-O", IML_VIT_DOWNLOAD_PATH], check=True
+            ["wget", IML_VIT_WEIGHTS_URL, "-O", str(IML_VIT_DOWNLOAD_PATH)], check=True
         )
         return
     
     # Download MMFusion checkpoints and pretrained models
     if extractor_name == MMFUSION_NAME:
-        Path(MMFUSION_CKPT_DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
-        Path(MMFUSION_PRETRAINED_DOWNLOAD_PATH).mkdir(parents=True, exist_ok=True)
+        MMFUSION_CKPT_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
+        MMFUSION_PRETRAINED_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
 
         print(f"[INFO] Downloading MMFusion checkpoints from {MMFUSION_CKPT_URL}...")
         gdown.download_folder(
             url=MMFUSION_CKPT_URL,
-            output=MMFUSION_CKPT_DOWNLOAD_PATH,
+            output=str(MMFUSION_CKPT_DOWNLOAD_PATH),
             quiet=False,
         )
 
         print(f"[INFO] Downloading MMFusion pretrained models from {MMFUSION_PRETRAINED_URL}...")
         gdown.download_folder(
             url=MMFUSION_PRETRAINED_URL,
-            output=MMFUSION_PRETRAINED_DOWNLOAD_PATH,
+            output=str(MMFUSION_PRETRAINED_DOWNLOAD_PATH),
             quiet=False,
         )
 
