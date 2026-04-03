@@ -37,7 +37,7 @@ class IMLViTExtractor(BaseExtractor):
         Constructor for the IMLViTExtractor class.
 
         Arguments:
-            gpu (bool): Flag for using GPU or CPU for feature extractors. Default is True
+            gpu (bool): Flag for using GPU or CPU for feature extractors. Default is True.
 
         Returns:
             None
@@ -103,12 +103,13 @@ class IMLViTExtractor(BaseExtractor):
 
         Returns:
             torch.Tensor: The preprocessed image tensor with shape 
-            (1, 3, IML_VIT_INPUT_SIZE, IML_VIT_INPUT_SIZE) 
-            and dtype float32 in the range [0, 1].
+            (1, 3, IML_VIT_INPUT_SIZE, IML_VIT_INPUT_SIZE) and dtype float32 normalized 
+            by the ImageNet mean and standard deviation.
         """
 
         # Load the image of the identity document and convert it to RGB to three channels
-        identity_document_image: Image.Image = Image.open(identity_document.path).convert("RGB")
+        with Image.open(identity_document.path) as image:
+            identity_document_image: Image.Image = image.convert("RGB")
 
         # Get size of the image
         image_width: int = 0    
@@ -199,15 +200,13 @@ class IMLViTExtractor(BaseExtractor):
             raise RuntimeError("Extractor model cannot be loaded.")
         
         iml_vit: iml_vit_model = self.extractor_model
-
-        # Preprocess the image of the identity document to a tensor
         image_tensor: torch.Tensor = self.preprocess_identity_document(identity_document)
         
         with torch.no_grad():
 
             # Extract the features and get the last feature map from the encoder
             # Returns a dictionary: {'last_feat': tensor shape (1, 768, 64, 64)}
-            encoder_outputs: dict[str, torch.Tensor] = iml_vit.encoder(image_tensor)
+            encoder_outputs: dict[str, torch.Tensor] = iml_vit.encoder_net(image_tensor)
 
         # Get the last feature map from the encoder output
         last_feat: torch.Tensor = encoder_outputs["last_feat"]
