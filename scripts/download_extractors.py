@@ -61,6 +61,11 @@ def reorganize_download(goal_directory: Path, downloaded_directory_name: str) ->
         downloaded_directory_name (str): Name of the directory where the files are 
         currently located.
 
+    Raises:
+        RuntimeError: If the directory where the files are currently located is not a directory or
+        if the file with the same name as the file being moved already exists 
+        in the goal directory.
+
     Returns:
         None
     """
