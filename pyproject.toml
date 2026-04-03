@@ -16,12 +16,13 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "torch",
+    "torchvision",
     "numpy",
     "pytest",
     "mypy",
     "ruff",
     "Pillow",
-
+    "gdown",
 ]
 
 # Setuptools package directory configuration
