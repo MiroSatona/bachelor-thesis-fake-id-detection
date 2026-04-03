@@ -35,7 +35,7 @@ build:
 
 	@if [ ! -d "$(EXTERNAL_DIR)" ]; then \
 		echo "Downloading extractors."; \
-		python3.12 "$(SCRIPTS_DIR)/download_extractors.py"; \
+		"$(ENV_DIR)/bin/python" "$(SCRIPTS_DIR)/download_extractors.py"; \
 	else \
 		echo "Extractors already exist."; \
 	fi
@@ -43,6 +43,21 @@ build:
 	@if [ -f "$(EXTERNAL_DIR)/TruFor/requirements.txt" ]; then \
 		echo "Installing TruFor dependencies."; \
 		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/TruFor/requirements.txt"; \
+	fi
+
+	@if [ -f "$(EXTERNAL_DIR)/IML_VIT/requirements.txt" ]; then \
+		echo "Installing IML-ViT dependencies."; \
+		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/IML_VIT/requirements.txt"; \
+	fi
+
+	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
+		echo "Installing MMFusion dependencies."; \
+		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
+	fi
+
+	@if [ -f "$(EXTERNAL_DIR)/EdgeDoc/requirements.txt" ]; then \
+		echo "Installing EdgeDoc dependencies."; \
+		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/EdgeDoc/requirements.txt"; \
 	fi
 
 # Running the tests for the data processing
