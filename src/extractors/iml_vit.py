@@ -62,8 +62,8 @@ class IMLViTExtractor(BaseExtractor):
             None
 
         Raise:
-            RuntimeError: If the source directory of the IML-ViT does not exist 
-            or if the extractor model cannot be loaded. 
+            RuntimeError: If the root directory, source directory, or checkpoint 
+            of the IML-ViT does not exist. 
 
         Returns:
             None
