@@ -16,6 +16,10 @@ META_DIR = meta_data
 TESTS_DIR = tests
 # Directory for the cache of the pytest
 PYTEST_CACHE_DIR = .pytest_cache
+# Directory for the cache of the mypy
+MYPY_CACHE_DIR = .mypy_cache
+# Directory for the cache of the ruff
+RUFF_CACHE_DIR = .ruff_cache
 
 # Build of the project
 build:
@@ -55,11 +59,6 @@ build:
 		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
 	fi
 
-	@if [ -f "$(EXTERNAL_DIR)/EdgeDoc/requirements.txt" ]; then \
-		echo "Installing EdgeDoc dependencies."; \
-		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/EdgeDoc/requirements.txt"; \
-	fi
-
 # Running the tests for the data processing
 test_data_processing:
 	@echo "Testing the data processing pipeline."
@@ -79,6 +78,13 @@ test_data_processing:
 
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/unit
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/integrations
+
+
+test_extractors:
+	@echo "Testing the extractors."
+	@echo "Setting up environment for testing."
+	@$(MAKE) build
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/extractors/
 
 # Ruff code quality check
 ruff_check:
@@ -138,8 +144,8 @@ clean:
 	@rm -rf "$(ENV_DIR)"
 	@rm -rf "$(EXTERNAL_DIR)"
 	@rm -rf "$(PYTEST_CACHE_DIR)"
-	@rm -rf .mypy_cache
-	@rm -rf .ruff_cache
+	@rm -rf "$(MYPY_CACHE_DIR)"
+	@rm -rf "$(RUFF_CACHE_DIR)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
-.PHONY: build zip clean test_data_processing ruff_check ruff_fix mypy_check
+.PHONY: build zip clean test_data_processing test_extractors ruff_check ruff_fix mypy_check
