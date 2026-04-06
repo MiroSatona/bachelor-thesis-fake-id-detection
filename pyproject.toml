@@ -1,0 +1,102 @@
+# Author: Martin Zůbek
+# Date: 2026-03-26
+# Description: pyproject.toml configuration for the Bachelor thesis project. This file defines build system requirements and project metadata.
+
+# Build system configuration
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# Project metadata and dependencies
+[project]
+name = "x253206"
+version = "1.0.0"
+description = "Bachelor thesis"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "torchvision",
+    "numpy",
+    "timm",   
+    "yacs",
+    "pyyaml",
+    "opencv-python",
+    "termcolor",
+    "scipy",
+    "Pillow",
+    "gdown",
+    "pytest",
+    "mypy",
+    "ruff",
+]
+
+# Setuptools package directory configuration
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+# Egg-info output directory configuration
+[tool.distutils.egg_info]
+egg_base = "meta_data"
+
+# Package discovery configuration
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+# Set up the ruff lint rules
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+# Configuraton of Ruff formatting
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# Mypy configuration
+[tool.mypy]
+python_version = "3.12"
+namespace_packages = true
+explicit_package_bases = true
+exclude = "^(external/|\\.venv/|meta_data/)"
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_return_any = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+pretty = true
+
+# Skip mypy check for external code
+[[tool.mypy.overrides]]
+module = ["external.*"]
+follow_imports = "skip"
+ignore_errors = true
+
+# Skip mypy check for gdown
+[[tool.mypy.overrides]]
+module = ["gdown"]
+ignore_missing_imports = true
+
+# Ignore warnings from external code in the pytest run
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:timm.*",
+    "ignore::FutureWarning:timm.*",
+    "ignore::DeprecationWarning:torch.*",
+    "ignore::FutureWarning:torch.*",
+    "ignore::UserWarning:torch.*",
+    "ignore::DeprecationWarning:torchvision.*",
+    "ignore::FutureWarning:torchvision.*",
+]
+
+# Ignore missing imports for torch and torchvision
+[[tool.mypy.overrides]]
+module = ["torch.*", "torchvision.*"]
+ignore_missing_imports = true
