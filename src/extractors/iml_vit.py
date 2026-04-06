@@ -19,11 +19,11 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
     IML_VIT_CHECKPOINT,
     IML_VIT_INPUT_SIZE,
     IML_VIT_NAME,
-    IMAGENET_MEAN,
-    IMAGENET_STD,
 )
 
 
