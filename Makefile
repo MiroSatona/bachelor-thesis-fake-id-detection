@@ -16,6 +16,10 @@ META_DIR = meta_data
 TESTS_DIR = tests
 # Directory for the cache of the pytest
 PYTEST_CACHE_DIR = .pytest_cache
+# Directory for the cache of the mypy
+MYPY_CACHE_DIR = .mypy_cache
+# Directory for the cache of the ruff
+RUFF_CACHE_DIR = .ruff_cache
 
 # Build of the project
 build:
@@ -35,7 +39,7 @@ build:
 
 	@if [ ! -d "$(EXTERNAL_DIR)" ]; then \
 		echo "Downloading extractors."; \
-		python3.12 "$(SCRIPTS_DIR)/download_extractors.py"; \
+		"$(ENV_DIR)/bin/python" "$(SCRIPTS_DIR)/download_extractors.py"; \
 	else \
 		echo "Extractors already exist."; \
 	fi
@@ -43,6 +47,16 @@ build:
 	@if [ -f "$(EXTERNAL_DIR)/TruFor/requirements.txt" ]; then \
 		echo "Installing TruFor dependencies."; \
 		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/TruFor/requirements.txt"; \
+	fi
+
+	@if [ -f "$(EXTERNAL_DIR)/IML_VIT/requirements.txt" ]; then \
+		echo "Installing IML-ViT dependencies."; \
+		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/IML_VIT/requirements.txt"; \
+	fi
+
+	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
+		echo "Installing MMFusion dependencies."; \
+		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
 	fi
 
 # Running the tests for the data processing
@@ -64,6 +78,13 @@ test_data_processing:
 
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/unit
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/integrations
+
+
+test_extractors:
+	@echo "Testing the extractors."
+	@echo "Setting up environment for testing."
+	@$(MAKE) build
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/extractors/
 
 # Ruff code quality check
 ruff_check:
@@ -123,6 +144,8 @@ clean:
 	@rm -rf "$(ENV_DIR)"
 	@rm -rf "$(EXTERNAL_DIR)"
 	@rm -rf "$(PYTEST_CACHE_DIR)"
+	@rm -rf "$(MYPY_CACHE_DIR)"
+	@rm -rf "$(RUFF_CACHE_DIR)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
-.PHONY: build zip clean test_data_processing ruff_check ruff_fix mypy_check
+.PHONY: build zip clean test_data_processing test_extractors ruff_check ruff_fix mypy_check

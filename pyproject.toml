@@ -16,11 +16,19 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "torch",
+    "torchvision",
     "numpy",
+    "timm",   
+    "yacs",
+    "pyyaml",
+    "opencv-python",
+    "termcolor",
+    "scipy",
+    "Pillow",
+    "gdown",
     "pytest",
     "mypy",
     "ruff",
-
 ]
 
 # Setuptools package directory configuration
@@ -70,3 +78,25 @@ pretty = true
 module = ["external.*"]
 follow_imports = "skip"
 ignore_errors = true
+
+# Skip mypy check for gdown
+[[tool.mypy.overrides]]
+module = ["gdown"]
+ignore_missing_imports = true
+
+# Ignore warnings from external code in the pytest run
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:timm.*",
+    "ignore::FutureWarning:timm.*",
+    "ignore::DeprecationWarning:torch.*",
+    "ignore::FutureWarning:torch.*",
+    "ignore::UserWarning:torch.*",
+    "ignore::DeprecationWarning:torchvision.*",
+    "ignore::FutureWarning:torchvision.*",
+]
+
+# Ignore missing imports for torch and torchvision
+[[tool.mypy.overrides]]
+module = ["torch.*", "torchvision.*"]
+ignore_missing_imports = true
