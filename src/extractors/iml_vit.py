@@ -19,7 +19,7 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
-    IML_VIT_CONFIG,
+    IML_VIT_CHECKPOINT,
     IML_VIT_IMAGENET_MEAN,
     IML_VIT_IMAGENET_STD,
     IML_VIT_INPUT_SIZE,
@@ -31,6 +31,10 @@ class IMLViTExtractor(BaseExtractor):
     """
     Class which is wrapper around the IML-ViT (Image Manipulation Localization via 
     Vision Transformer) for extracting features from identity document images.
+
+    Attributes:
+        root_dir (Path): The root directory of the IML-ViT.
+        src_dir (Path): The source code directory of the IML-ViT.
     """
     def __init__(self, gpu: bool = DEFAULT_USE_GPU) -> None:
         """
@@ -69,21 +73,29 @@ class IMLViTExtractor(BaseExtractor):
         if self.extractor_model is not None:
             return
         
+        if not self.root_dir.exists():
+            raise RuntimeError(f"Cannot find IML-ViT root directory in {self.root_dir}.")
+
         # Check if the source directory of the IML-ViT exists
         if not self.src_dir.exists():
             raise RuntimeError(f"Cannot find IML-ViT code in {self.src_dir}.")
-
-        # Get wieghts of the pretrained IML-ViT model
-        weights_path: Path = IML_VIT_CONFIG
-
-        # Get the model from the IML-ViT repository
-        self.extractor_model: iml_vit_model = (
-            iml_vit_model( 
-                vit_pretrain_path=str(weights_path) 
-                if weights_path.exists() 
-                else None
+        
+        # Check if the directory with the checkpoint exists
+        if not IML_VIT_CHECKPOINT.exists():
+            raise RuntimeError(
+                f"IML-ViT checkpoint not found at {IML_VIT_CHECKPOINT}. "
+                "Download it from the official repository."
             )
-        )
+
+        # Create the model with trained checkpoint
+        # REF: external/IML_VIT/Demo.ipynb — checkpoint loading section
+        #      (App must be builded for get code which is referenced)
+        self.extractor_model: iml_vit_model = iml_vit_model(vit_pretrain_path=None)
+
+        # Load the trained checkpoint
+        checkpoint = torch.load(str(IML_VIT_CHECKPOINT), map_location=self.device)
+        # Load the checkpoint into the model
+        self.extractor_model.load_state_dict(checkpoint, strict=True)
 
         # Move the model to the device and set it to evaluation mode
         self.extractor_model.to(self.device)
@@ -122,10 +134,12 @@ class IMLViTExtractor(BaseExtractor):
         target_height: int = max(image_height, IML_VIT_INPUT_SIZE)
 
         # If the original size of the image is smaller than the input size of the IML-ViT model, 
-        # pad the image with zeros to the target size.
-        # This and other proccessing steps in this method are based on 
-        # the code from the IML-ViT repository.
-        # REF: externl/IML_VIT/utils/datasets.py
+        # will be padded with black pixels.
+        #
+        # This and other proccessing steps in this method are based
+        # on the code from the IML-ViT repository.
+        #
+        # REF: external/IML_VIT/utils/datasets.py
         #      external/IML_VIT/utils/iml_transforms.py
         #      (App must be builded for get code which is referenced)
         if target_width != image_width or target_height != image_height:
@@ -134,6 +148,7 @@ class IMLViTExtractor(BaseExtractor):
                 (target_width, target_height),
                 (0, 0, 0)
             )
+            # Paste the original image to the left-top corner of the padded image
             padded_identity_document.paste(identity_document_image, (0, 0))
             identity_document_image = padded_identity_document
 
@@ -199,7 +214,9 @@ class IMLViTExtractor(BaseExtractor):
         if self.extractor_model is None:
             raise RuntimeError("Extractor model cannot be loaded.")
         
+        # Get the model for extracting the features
         iml_vit: iml_vit_model = self.extractor_model
+        # Preprocess the image of the identity document to a tensor
         image_tensor: torch.Tensor = self.preprocess_identity_document(identity_document)
         
         with torch.no_grad():
@@ -211,7 +228,7 @@ class IMLViTExtractor(BaseExtractor):
         # Get the last feature map from the encoder output
         last_feat: torch.Tensor = encoder_outputs["last_feat"]
 
-        # Global average pooling over spatial dimensions (H, W) → 768
+        # Global average pooling over spatial dimensions (H, W) -> 768
         embedding_vector: npt.NDArray[numpy.float32] = (
             torch.mean(last_feat, dim=[2,3])
             .squeeze(0)
