@@ -159,8 +159,8 @@ class SwinExtractor(BaseExtractor):
 			RuntimeError: If the transformation pipeline cannot be built.
 
 		Returns:
-			torch.Tensor: The preprocessed image tensor with shape [1, 3, H, W] and dtype float32.
-			Values are ImageNet-normalized and can be negative or exceed 1.0.
+			torch.Tensor: The preprocessed image tensor with shape [1, 3, H, W] and dtype float32,
+			values are ImageNet-normalized and can be negative or greater than 1.0.
 		"""
 		
 		# If the transformation pipeline is not built, load the extractor model to build it
