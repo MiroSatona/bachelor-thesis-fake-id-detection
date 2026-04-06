@@ -15,6 +15,11 @@ DEFAULT_USE_GPU: bool = True
 # Name of the directory with all the code for extractors
 EXTRACTORS_DIR_STR: str = "external"
 
+# ImageNet mean for normalizing input images 
+IMAGENET_MEAN: tuple[float, float, float] = (0.485, 0.456, 0.406)
+# ImageNet standard deviation for normalizing input images
+IMAGENET_STD: tuple[float, float, float] = (0.229, 0.224, 0.225)
+
 ####################### TruFor specific constants #######################
 # Name of the directory with the code for TruFor extractor
 TRUFOR_NAME: str = "TruFor"
@@ -44,10 +49,6 @@ IML_VIT_CHECKPOINT: Path = (
 	/ "checkpoints"
 	/ "iml-vit_checkpoint.pth"
 )
-# ImageNet mean and standard deviation for normalizing the input images for the IML-ViT extractor
-IML_VIT_IMAGENET_MEAN: tuple[float, float, float] = (0.485, 0.456, 0.406)
-# ImageNet standard deviation for normalizing the input images for the IML-ViT extractor
-IML_VIT_IMAGENET_STD: tuple[float, float, float] = (0.229, 0.224, 0.225)
 
 #################### MMFusion specific constants ######################
 # Name of the directory with the code for MMFusion extractor
@@ -77,10 +78,6 @@ MMFUSION_NP_WEIGHTS: Path = (
     / "noiseprint"
     / "np++.pth"
 )
-# ImageNet mean for normalizing the input images for the MMFusion extractor
-MMFUSION_IMAGENET_MEAN: tuple[float, float, float] = (0.485, 0.456, 0.406)
-# ImageNet standard deviation for normalizing the input images for the MMFusion extractor
-MMFUSION_IMAGENET_STD: tuple[float, float, float] = (0.229, 0.224, 0.225)
 
 ####################### SwinT specific constants #######################
 # Name of the directory with the code for SwinT extractor
