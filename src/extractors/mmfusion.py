@@ -24,10 +24,10 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
     MMFUSION_CHECKPOINT,
     MMFUSION_CONFIG,
-    MMFUSION_IMAGENET_MEAN,
-    MMFUSION_IMAGENET_STD,
     MMFUSION_NAME,
     MMFUSION_NP_WEIGHTS,
 )
@@ -222,8 +222,8 @@ class MMFusionExtractor(BaseExtractor):
             # Normalize the RGB image tensor using the ImageNet mean and standard deviation
             image_tensor_noralized: torch.Tensor = torchvision.transforms.functional.normalize(
                 image_tensor, 
-                mean=MMFUSION_IMAGENET_MEAN, 
-                std=MMFUSION_IMAGENET_STD
+                mean=IMAGENET_MEAN, 
+                std=IMAGENET_STD
             )
 
             # Concatenate the RGB image tensor for backbone input

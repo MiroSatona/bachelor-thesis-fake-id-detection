@@ -20,10 +20,10 @@ from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
     IML_VIT_CHECKPOINT,
-    IML_VIT_IMAGENET_MEAN,
-    IML_VIT_IMAGENET_STD,
     IML_VIT_INPUT_SIZE,
     IML_VIT_NAME,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
 )
 
 
@@ -168,13 +168,13 @@ class IMLViTExtractor(BaseExtractor):
 
         # Normalize the image using the ImageNet mean
         imagenet_mean: npt.NDArray[numpy.float32] = numpy.array(
-            IML_VIT_IMAGENET_MEAN,
+            IMAGENET_MEAN,
             dtype=numpy.float32
         )
 
         # Normalize the image using the ImageNet standard deviation
         imagenet_std: npt.NDArray[numpy.float32] = numpy.array(
-            IML_VIT_IMAGENET_STD,
+            IMAGENET_STD,
             dtype=numpy.float32
         )
 
