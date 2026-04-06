@@ -111,6 +111,7 @@ class TruForExtractor(BaseExtractor):
         # TruFor needs this normalization, because the the NoisePrint++ was trained like this.
         # REF: external/TruFor/TruFor_train_test/lib/models/cmx/builder_np_conf.py, line 265
         #      and external/TruFor/TruFor_train_test/dataset/dataset_test.py, line 39
+        #      (App must be builded for get code which is referenced)
         noiseprint_convert: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
