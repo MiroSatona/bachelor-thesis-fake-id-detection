@@ -19,8 +19,8 @@ EXTRACTORS_DIR: Path = Path("external")
 TRUFOR_NAME: str = "TruFor"
 # Name of the MMFusion
 MMFUSION_NAME: str = "MMFusion"
-# Name of the EdgeDoc
-EDGEDOC_NAME: str = "EdgeDoc"
+# Name of the SwinT
+SWINT_NAME: str = "SwinT"
 # Name of the IML-ViT
 IML_VIT_NAME: str = "IML_VIT"
 
@@ -29,15 +29,21 @@ EXTRACTORS: dict[str, str] = {
     TRUFOR_NAME: "https://github.com/grip-unina/TruFor.git",
     MMFUSION_NAME: "https://github.com/IDT-ITI/MMFusion-IML.git",
     IML_VIT_NAME: "https://github.com/SunnyHaze/IML-ViT.git",
-    EDGEDOC_NAME: "https://gitlab.idiap.ch/biometric/code.edgedoc_iccv2025.git"
+    SWINT_NAME: "https://github.com/microsoft/Swin-Transformer.git"
     
 }
 
 ################################ IML-ViT specific constants ########################################
-# String with the URL for downloading the pretrained weights of the IML-ViT
+# String with the URL for downloading the weights of the IML-ViT
 IML_VIT_WEIGHTS_URL: str = "https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth"
-# Path where the pretrained weights of the IML-ViT will be downloaded
-IML_VIT_DOWNLOAD_PATH: Path = Path("external/IML_VIT/pretrained-weights/mae_pretrain_vit_base.pth")
+# Path where the weights of the IML-ViT will be downloaded
+IML_VIT_DOWNLOAD_WEIGHTS_PATH: Path = Path(
+    "external/IML_VIT/pretrained-weights/mae_pretrain_vit_base.pth"
+)
+# Google Drive ID for downloading the checkpoint of trained IML-ViT model
+IML_VIT_CHECKPOINT_GDRIVE_ID: str = "1xXJGJPW1i5j9Pc1JKd7fJmIAQkvt9jY7"
+# Path where the checkpoint of trained IML-ViT model will be downloaded
+IML_VIT_CHECKPOINT_DOWNLOAD_PATH: Path = Path("external/IML_VIT/checkpoints/iml-vit_checkpoint.pth")
 
 ############################# MMFusion specific constants ##########################################
 # URL for downloading the MMFusion checkpoints
@@ -49,6 +55,10 @@ MMFUSION_PRETRAINED_URL: str = "https://drive.google.com/drive/folders/1eTLcCZWq
 # Path where the MMFusion pretrained models will be downloaded
 MMFUSION_PRETRAINED_DOWNLOAD_PATH: Path = Path("external/MMFusion/pretrained")
 
+############################# SwinT specific constants ##########################################
+SWINT_PRETRAINED_URL: str = (  
+    "https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth"
+)
 
 def reorganize_download(goal_directory: Path, downloaded_directory_name: str) -> None:
     """
@@ -118,27 +128,36 @@ def get_extractor(extractors_directory: Path, extractor_name: str, extractor_url
     print(f"[INFO] Downloading {extractor_name} from {extractor_url}...")
     subprocess.run(["git", "clone", extractor_url, str(extractor_path)], check=True)
 
-    # Download IML-ViT pretrained weights
+    # Download IML-ViT weights and checkpoint
     if extractor_name == IML_VIT_NAME:
-        print(f"[INFO] Downloading IML-ViT weights from {IML_VIT_WEIGHTS_URL}...")
+
+        print(f"[INFO] Downloading IML-ViT checkpoint (id={IML_VIT_CHECKPOINT_GDRIVE_ID}).")
+        IML_VIT_CHECKPOINT_DOWNLOAD_PATH.parent.mkdir(parents=True, exist_ok=True)
+        gdown.download(
+            id=IML_VIT_CHECKPOINT_GDRIVE_ID,
+            output=str(IML_VIT_CHECKPOINT_DOWNLOAD_PATH),
+            quiet=False,
+        )
+
+        print(f"[INFO] Downloading IML-ViT weights from {IML_VIT_WEIGHTS_URL}.")
         subprocess.run(
-            ["wget", IML_VIT_WEIGHTS_URL, "-O", str(IML_VIT_DOWNLOAD_PATH)], check=True
+            ["wget", IML_VIT_WEIGHTS_URL, "-O", str(IML_VIT_DOWNLOAD_WEIGHTS_PATH)], check=True
         )
         return
     
-    # Download MMFusion checkpoints and pretrained models
+    # Download MMFusion weights and checkpoint
     if extractor_name == MMFUSION_NAME:
         MMFUSION_CKPT_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
         MMFUSION_PRETRAINED_DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
 
-        print(f"[INFO] Downloading MMFusion checkpoints from {MMFUSION_CKPT_URL}...")
+        print(f"[INFO] Downloading MMFusion checkpoint from {MMFUSION_CKPT_URL}.")
         gdown.download_folder(
             url=MMFUSION_CKPT_URL,
             output=str(MMFUSION_CKPT_DOWNLOAD_PATH),
             quiet=False,
         )
 
-        print(f"[INFO] Downloading MMFusion pretrained models from {MMFUSION_PRETRAINED_URL}...")
+        print(f"[INFO] Downloading MMFusion pretrained weights from {MMFUSION_PRETRAINED_URL}.")
         gdown.download_folder(
             url=MMFUSION_PRETRAINED_URL,
             output=str(MMFUSION_PRETRAINED_DOWNLOAD_PATH),
@@ -153,8 +172,24 @@ def get_extractor(extractors_directory: Path, extractor_name: str, extractor_url
 
         return
 
-    return
+    # Download SwinT pretrained weights
+    if extractor_name == SWINT_NAME:
+        print(f"[INFO] Downloading SwinT pretrained weights from {SWINT_PRETRAINED_URL}.")
+        subprocess.run(
+            ["mkdir", "-p", str(extractor_path / "pretrained")], check=True
+        )
+        subprocess.run(
+            ["wget", SWINT_PRETRAINED_URL, "-O", str(
+                extractor_path 
+                / "pretrained" 
+                / "swin_tiny_patch4_window7_224.pth"
+            )],
+            check=True,
+        )
 
+        return
+
+    return
 
 def download_extractors() -> None:
     """
