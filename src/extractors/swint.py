@@ -17,6 +17,7 @@ from PIL import Image
 
 from external.SwinT import config, models
 from external.SwinT.data.build import build_transform
+from external.SwinT.models.swin_transformer import SwinTransformer
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
@@ -206,7 +207,7 @@ class SwinExtractor(BaseExtractor):
 			raise RuntimeError("Swin model cannot be loaded.")
 
 		# Get the Swin Transformer model
-		swint: torch.nn.Module = self.extractor_model
+		swint: SwinTransformer = self.extractor_model
 		# Preprocess the image of the identity document to a tensor
 		image_tensor: torch.Tensor = self.preprocess_identity_document(identity_document)
 
