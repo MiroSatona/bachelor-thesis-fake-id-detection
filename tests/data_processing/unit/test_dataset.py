@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-28
 File: test_dataset.py
 Description: Unit tests for the Dataset class.
@@ -17,10 +17,10 @@ def create_identity_document(path_str: str) -> IdentityDocumentImage:
     Function for creating an identity document with given path string for testing.
 
     Arguments:
-        tmp_path (Path): A temporary directory provided by pytest for creating test files.
+        path_str (str): A path string used to create the identity document.
         
     Returns:
-        None
+        IdentityDocumentImage: An instance of IdentityDocumentImage pointing to the given path.
     """
     return IdentityDocumentImage(
         path=Path(path_str),

@@ -3,7 +3,7 @@ Author: Martin Zůbek
 Date: 2026-04-01
 File: mmfusion.py
 Description: This file contains the implementation of the MMFusionExtractor class which is a wrapper
-around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting features for extracting features
+around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting features
 from identity document images. The model combines four input modalities: 
 RGB, Noiseprint++, Bayar convolution and SRM filter to detect image manipulation anomalies.
 """
@@ -35,7 +35,7 @@ from src.extractors.constants import (
 
 class MMFusionExtractor(BaseExtractor):
     """
-    Class which is wrapper around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting
+    Class which is a wrapper around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting
     features from identity document images.
 
     Attributes:

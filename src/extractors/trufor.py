@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: trufor.py
-Description: This file contains the implementation of the TruForExtractor class which as a wrapper 
+Description: This file contains the implementation of the TruForExtractor class which is a wrapper 
 around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features from identity 
 document images.
 """
@@ -23,7 +23,7 @@ from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_NAME
 
 class TruForExtractor(BaseExtractor):
     """
-    Class which is wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
+    Class which is a wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
     from identity document images.
 
     Attributes:
@@ -134,11 +134,11 @@ class TruForExtractor(BaseExtractor):
         identity_document: IdentityDocumentImage,
     ) -> npt.NDArray[numpy.float32]:
         """
-        Method for extracting a 512-dimensinal embedding vector from an identity document image 
-        using the TruFor model. In the first step, the image is processed trough the NoisePrint++.
+        Method for extracting a 512-dimensional embedding vector from an identity document image 
+        using the TruFor model. In the first step, the image is processed through the NoisePrint++.
         The NoisePrint++ features are extracted using DnCNN and then extended to three channels.
         The original RGB features and the NoisePrint++ features are used as an input
-        to the TruFor Vision Transformer backbone. The final embedding vector is getted
+        to the TruFor Vision Transformer backbone. The final embedding vector is obtained
         from the last stage of the backbone by applying global average pooling.
 
         Arguments:

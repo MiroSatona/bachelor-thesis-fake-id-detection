@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-28
 File: test_data_splitter.py
 Description: Unit tests for the DatasetSplitter class for splitting identity documents 

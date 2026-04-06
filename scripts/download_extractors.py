@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-26
 File: download_extractors.py
 Description: This script is used for downloading pretrained models used as feature extractors. 
@@ -121,7 +121,7 @@ def get_extractor(extractors_directory: Path, extractor_name: str, extractor_url
         None
     """
     
-    # Get path for the code of the dowloaded extractor
+    # Get path for the code of the downloaded extractor
     extractor_path = extractors_directory / extractor_name
 
     # Get the code of the extractor by cloning the repository from the provided URL

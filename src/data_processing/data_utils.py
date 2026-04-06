@@ -38,7 +38,7 @@ class DataUtils:
     @staticmethod
     def parse_attack_type(folder_name: str) -> AttackType | None:
         """
-        Static method for parsing the attack type from the folder name. In detaset for this project,
+        Static method for parsing the attack type from the folder name. In dataset for this project,
         the folder for attack looks like:
 
         .

@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: constants.py
-Description: This file contains constant values for the proccessing provided data for training or 
+Description: This file contains constant values for the processing provided data for training or 
              for application.
 """
 
@@ -11,7 +11,7 @@ POSITIVE_SUBSET: str = "positive"
 # Subset of the provided dataset with negative samples
 ATTACK_SUBSET: str = "attack"
 
-# Supproted image extensisons for the provided image of the identity document
+# Supported image extensions for the provided image of the identity document
 IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 # Percentage of the dataset to be used for training

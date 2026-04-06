@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: iml_vit.py
-Description: This file contains the implementation of the IMLViTExtractor class which as a wrapper 
+Description: This file contains the implementation of the IMLViTExtractor class which is a wrapper 
 around the IML-ViT (Image Manipulation Localization via Vision Transformer) for extracting 
 features from identity document images.
 """
@@ -29,7 +29,7 @@ from src.extractors.constants import (
 
 class IMLViTExtractor(BaseExtractor):
     """
-    Class which is wrapper around the IML-ViT (Image Manipulation Localization via 
+    Class which is a wrapper around the IML-ViT (Image Manipulation Localization via 
     Vision Transformer) for extracting features from identity document images.
 
     Attributes:
@@ -136,7 +136,7 @@ class IMLViTExtractor(BaseExtractor):
         # If the original size of the image is smaller than the input size of the IML-ViT model, 
         # will be padded with black pixels.
         #
-        # This and other proccessing steps in this method are based
+        # This and other processing steps in this method are based
         # on the code from the IML-ViT repository.
         #
         # REF: external/IML_VIT/utils/datasets.py
@@ -178,7 +178,7 @@ class IMLViTExtractor(BaseExtractor):
             dtype=numpy.float32
         )
 
-        # Uset the ImageNet mean and standard deviation to normalize the image
+        # Use the ImageNet mean and standard deviation to normalize the image
         preprocess_image: npt.NDArray[numpy.float32] = (image_array - imagenet_mean) / imagenet_std
 
         # Reorganize the dimensions from [Height, Width, Channels] to [Channels, Height, Width]
