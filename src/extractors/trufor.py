@@ -25,6 +25,10 @@ class TruForExtractor(BaseExtractor):
     """
     Class which is wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
     from identity document images.
+
+    Attributes:
+        root_dir (Path): The root directory of the TruFor.
+        src_dir (Path): The source code directory of the TruFor.
     """
     def __init__(self, gpu: bool = DEFAULT_USE_GPU) -> None:
         """
