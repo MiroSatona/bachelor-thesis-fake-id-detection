@@ -13,11 +13,8 @@ import numpy
 import numpy.typing as npt
 import torch
 
-from external.IML_VIT.iml_vit_model import iml_vit_model
-from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
-from src.extractors.constants import DEFAULT_USE_GPU, EXTRACTORS_DIR_STR
-from src.extractors.enums import DeviceType
+from src.extractors.constants import CPU, CUDA, DEFAULT_USE_GPU, EXTRACTORS_DIR_STR
 
 
 class BaseExtractor(ABC):
@@ -43,16 +40,25 @@ class BaseExtractor(ABC):
         """
         self.use_gpu: bool = gpu
         self.device: torch.device = ( 
-            torch.device(DeviceType.CUDA) 
+            torch.device(CUDA) 
             if self.use_gpu and torch.cuda.is_available() 
-            else torch.device(DeviceType.CPU)
+            else torch.device(CPU)
         )
         self.root_dir: Path = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR
         self.src_dir: Path = self.root_dir
-        self.extractor_model: EncoderDecoder | iml_vit_model | None = None
+        self.extractor_model: torch.nn.Module | None = None
 
     @abstractmethod
     def load_extractor(self) -> None:
+        """
+        Method for loading the specific extractor model.
+        
+        Arguments:
+            None
+            
+        Returns:
+            None
+        """
         pass
 
     @abstractmethod
@@ -60,8 +66,30 @@ class BaseExtractor(ABC):
         self, 
         identity_document: IdentityDocumentImage
     ) -> torch.Tensor:
+        """
+        Method for preprocessing the image of the identity document to a tensor which can be used
+        as an input for the extractor model.
+
+        Arguments:
+            identity_document (IdentityDocumentImage): The object for internal representation
+            of the identity document image.
+
+        Returns:
+            torch.Tensor: The preprocessed image tensor.
+        """
         pass
 
     @abstractmethod
     def extract(self, identity_document: IdentityDocumentImage) -> npt.NDArray[numpy.float32]:
+        """
+        Method for extracting the feature vector from the image of the identity document using
+        the extractor model.
+
+        Arguments:
+            identity_document (IdentityDocumentImage): The object for internal representation
+            of the identity document image.
+
+        Returns:
+            npt.NDArray[numpy.float32]: The extracted feature vector.
+        """
         pass
