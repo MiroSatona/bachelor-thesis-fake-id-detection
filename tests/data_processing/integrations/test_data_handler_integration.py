@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-28
 File: test_data_handler_integration.py
 Description: Integration tests for the DataHandler class.

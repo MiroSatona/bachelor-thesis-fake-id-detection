@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: enums.py
-Description: This file contains enum values for the proccessing provided data 
+Description: This file contains enum values for the processing provided data 
 for training or for application.
 """
 

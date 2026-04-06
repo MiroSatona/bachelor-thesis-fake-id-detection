@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-28
 File: test_data_loader.py
 Description: Unit tests for the DataLoader class for loading the dataset of identity documents 
@@ -55,7 +55,7 @@ def test_load_not_existing_identity_document(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         loader.load_single_identity_document()
 
-def test_load_unsopported_image_extension(tmp_path: Path) -> None:
+def test_load_unsupported_image_extension(tmp_path: Path) -> None:
     """
     Test for loading identity document image with unsupported image extension
     and raising ValueError.

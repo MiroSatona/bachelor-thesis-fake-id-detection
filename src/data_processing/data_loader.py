@@ -16,7 +16,7 @@ from src.data_processing.identity_document import IdentityDocumentImage
 
 class DataLoader:
     """
-    Class rsponsible for loading identity document images from the dataset and creating 
+    Class responsible for loading identity document images from the dataset and creating 
     IdentityDocumentImage instances for their internal representation.
 
     Attributes:
@@ -100,7 +100,7 @@ class DataLoader:
         positive_subset: Path,
     ) -> list[IdentityDocumentImage]:
         """
-        Method for loading positive identity document images and cerating IdentityDocumentImage 
+        Method for loading positive identity document images and creating IdentityDocumentImage 
         instances for their internal representation.
 
         positive/                      # positive_subset
@@ -161,7 +161,7 @@ class DataLoader:
                 
     def load_attack_identity_documents(self, attack_subset: Path) -> list[IdentityDocumentImage]:
         """
-        Method for loading attack identity document images and cerating IdentityDocumentImage 
+        Method for loading attack identity document images and creating IdentityDocumentImage 
         instances for their internal representation.
 
 

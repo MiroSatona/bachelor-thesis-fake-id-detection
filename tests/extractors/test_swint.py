@@ -136,7 +136,7 @@ def test_shape_of_preprocess_image(
     assert image_tensor.shape == (1, 3, 224, 224)
     assert image_tensor.dtype == torch.float32
 
-def test_preproccess_resizes_small_iamges(
+def test_preprocess_resizes_small_images(
         instantiate_swin_extractor: SwinExtractor, 
         create_identity_document: IdentityDocumentImage
     ) -> None:
@@ -160,7 +160,7 @@ def test_preproccess_resizes_small_iamges(
     assert image_tensor.shape[2] == 224
     assert image_tensor.shape[3] == 224
 
-def test_preproccess_crops_large_images(
+def test_preprocess_crops_large_images(
         instantiate_swin_extractor: SwinExtractor, 
         create_large_identity_document: IdentityDocumentImage
     ) -> None:
@@ -238,7 +238,7 @@ def test_lazy_loading(
         instantiate_swin_extractor: SwinExtractor
     ) -> None:
     """
-    Tests that calling load_extractor() multiple times is and testing if the model is not reload,
+    Tests that calling load_extractor() multiple times does not reload the model -
     the same model instance is reused across repeated calls.
     
     Arguments:

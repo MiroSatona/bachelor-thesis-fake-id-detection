@@ -1,5 +1,5 @@
 """
-Atuhor: Martin Zůbek
+Author: Martin Zůbek
 Date: 2026-03-28
 File: test_data_utils.py
 Description: Unit tests for the DataUtils class for utility functions.
