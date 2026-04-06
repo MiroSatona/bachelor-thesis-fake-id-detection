@@ -15,7 +15,6 @@ import torch
 from PIL import Image
 
 from external.TruFor.TruFor_train_test.lib.config import config as trufor_config
-from external.TruFor.TruFor_train_test.lib.config import update_config
 from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
@@ -53,8 +52,8 @@ class TruForExtractor(BaseExtractor):
             None
 
         Raise:
-            RuntimeError: If the source directory of the TruFor does not exist 
-            or if the extractor model cannot be loaded. 
+            RuntimeError: If the root directory, source directory, or configuration file 
+            of the TruFor does not exist.
 
         Returns:
             None
@@ -63,12 +62,22 @@ class TruForExtractor(BaseExtractor):
         if self.extractor_model is not None:
             return
 
-        # Check if the source directory of the TruFor exists
+        # Check if the root directory of the TruFor exists
+        if not self.root_dir.exists():
+            raise RuntimeError(f"Cannot find TruFor root directory in {self.root_dir}.")
+        # Check if the source code directory of the TruFor exists
         if not self.src_dir.exists():
             raise RuntimeError(f"Cannot find TruFor code in {self.src_dir}.")
+        # Check if the configuration file of the TruFor exists
+        if not TRUFOR_CONFIG.exists():
+            raise RuntimeError(f"Cannot find TruFor configuration file in {TRUFOR_CONFIG}.")
         
-        # Configure the path to the TruFor configuration file
-        update_config(trufor_config, str(TRUFOR_CONFIG))
+        # Unfreeze the configuration
+        trufor_config.defrost()
+        # Load the configuration from the file
+        trufor_config.merge_from_file(str(TRUFOR_CONFIG))
+        # Freeze the configuration
+        trufor_config.freeze()
 
         # Get the model from the TruFor repository
         self.extractor_model = EncoderDecoder(cfg=trufor_config)
@@ -98,13 +107,12 @@ class TruForExtractor(BaseExtractor):
         # Load the image of the identity document and convert it to RGB to three channels
         identity_document_image: Image.Image = Image.open(identity_document.path).convert("RGB")
 
-        # Normalize the image to [0, 1]
+        # Normalize the image to interval [0, 1]
         # TruFor needs this normalization, because the the NoisePrint++ was trained like this.
-        # REF: external/TruFor/TruFor_train_test/lib/models/cmx/encoders/builder_np_conf.py, 
-        #      On the line 265
-        #      (App must be builded for get code which is referenced)
+        # REF: external/TruFor/TruFor_train_test/lib/models/cmx/builder_np_conf.py, line 265
+        #      and external/TruFor/TruFor_train_test/dataset/dataset_test.py, line 39
         noiseprint_convert: npt.NDArray[numpy.float32] = (
-            numpy.array(identity_document_image, dtype=numpy.float32) / 255.0
+            numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
 
         # Reorganize the dimensions from [Height, Width, Channels] to [Channels, Height, Width]
@@ -154,14 +162,15 @@ class TruForExtractor(BaseExtractor):
             # Extract the NoisePrint++ features
             noiseprint_features: torch.Tensor = trufor.dncnn(image_tensor)
 
-            # Repeat the NoisePrint++ features to have three channels
+            # Extend the NoisePrint++ features to three channels
             noiseprint_features_extended_channels: torch.Tensor = noiseprint_features.repeat(
                 1, 3, 1, 1
             )
 
-            # RGB input for the backbone
+            # RGB tensor input for the TruFor
             image_tensor_input: torch.Tensor = image_tensor
 
+            # Check TruFor preprocessing module and preprocess RGB input if available
             if trufor.prepro is not None:
                 image_tensor_input = trufor.prepro(image_tensor_input)
 
