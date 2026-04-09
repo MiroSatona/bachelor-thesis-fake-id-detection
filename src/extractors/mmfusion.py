@@ -35,7 +35,7 @@ from src.extractors.constants import (
 
 class MMFusionExtractor(BaseExtractor):
     """
-    Class which is a wrapper around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting
+    Class which is wrapper around the MMFusion (Multi-Modal Fusion, ITI-CERTH) for extracting
     features from identity document images.
 
     Attributes:
@@ -177,7 +177,7 @@ class MMFusionExtractor(BaseExtractor):
     def extract(
             self, 
             identity_document: IdentityDocumentImage
-    ) -> npt.NDArray[numpy.float32]:
+    ) -> torch.Tensor:
         """
         Method for extracting a 512-dimensional embedding vector from an identity document image
         using the MMFusion model. The image is processed together with three additional modalities
@@ -194,7 +194,7 @@ class MMFusionExtractor(BaseExtractor):
             RuntimeError: If the extractor model or modality extractor cannot be loaded.
 
         Returns:
-            npt.NDArray[numpy.float32]: The embedding vector with shape (512,) and dtype float32.
+            torch.Tensor: The embedding vector with shape (512,) and dtype float32.
         """
 
         # Load the extractor model and modality extractor if they are not loaded yet
@@ -239,12 +239,9 @@ class MMFusionExtractor(BaseExtractor):
             last_stage_output: torch.Tensor = stages_output[-1]
 
             # Global average pooling to get the embedding vector -> 512
-            embedding_vector: npt.NDArray[numpy.float32] = (
+            embedding_vector: torch.Tensor = (
             torch.mean(last_stage_output, dim=[2, 3])
             .squeeze(0)
-            .cpu()
-            .numpy()
-            .astype(numpy.float32)
             )
 
             return embedding_vector

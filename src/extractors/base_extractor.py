@@ -9,8 +9,6 @@ This class is used like a template for all the future extractors.
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import numpy
-import numpy.typing as npt
 import torch
 
 from src.data_processing.identity_document import IdentityDocumentImage
@@ -80,9 +78,9 @@ class BaseExtractor(ABC):
         pass
 
     @abstractmethod
-    def extract(self, identity_document: IdentityDocumentImage) -> npt.NDArray[numpy.float32]:
+    def extract(self, identity_document: IdentityDocumentImage) -> torch.Tensor:
         """
-        Method for extracting the feature vector from the image of the identity document using
+        Method for extracting the embedding vector from the image of the identity document using
         the extractor model.
 
         Arguments:
@@ -90,6 +88,6 @@ class BaseExtractor(ABC):
             of the identity document image.
 
         Returns:
-            npt.NDArray[numpy.float32]: The extracted feature vector.
+            torch.Tensor: The extracted embedding vector.
         """
         pass

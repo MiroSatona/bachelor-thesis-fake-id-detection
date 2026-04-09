@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: trufor.py
-Description: This file contains the implementation of the TruForExtractor class which is a wrapper 
+Description: This file contains the implementation of the TruForExtractor class which as a wrapper 
 around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features from identity 
 document images.
 """
@@ -23,7 +23,7 @@ from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_NAME
 
 class TruForExtractor(BaseExtractor):
     """
-    Class which is a wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
+    Class which is wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
     from identity document images.
 
     Attributes:
@@ -132,7 +132,7 @@ class TruForExtractor(BaseExtractor):
     def extract(
         self,
         identity_document: IdentityDocumentImage,
-    ) -> npt.NDArray[numpy.float32]:
+    ) -> torch.Tensor:
         """
         Method for extracting a 512-dimensional embedding vector from an identity document image 
         using the TruFor model. In the first step, the image is processed through the NoisePrint++.
@@ -149,7 +149,7 @@ class TruForExtractor(BaseExtractor):
             RuntimeError: If the extractor model cannot be loaded.
 
         Returns:
-            npt.NDArray[numpy.float32]: The embedding vector with shape (512,) and dtype float32.
+            torch.Tensor: The embedding vector with shape (512,) and dtype float32.
         """
 
         # Load the extractor model
@@ -193,12 +193,9 @@ class TruForExtractor(BaseExtractor):
         last_stage_output: torch.Tensor = stages_outputs[3]
 
         # Global average pooling to get the embedding vector -> 512
-        embedding_vector: npt.NDArray[numpy.float32] = (
+        embedding_vector: torch.Tensor = (
             torch.mean(last_stage_output, dim=[2, 3])
             .squeeze(0)
-            .cpu()
-            .numpy()
-            .astype(numpy.float32)
         )
 
         return embedding_vector
