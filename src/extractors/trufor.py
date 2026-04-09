@@ -132,7 +132,7 @@ class TruForExtractor(BaseExtractor):
     def extract(
         self,
         identity_document: IdentityDocumentImage,
-    ) -> npt.NDArray[numpy.float32]:
+    ) -> torch.Tensor:
         """
         Method for extracting a 512-dimensional embedding vector from an identity document image 
         using the TruFor model. In the first step, the image is processed through the NoisePrint++.
@@ -149,7 +149,7 @@ class TruForExtractor(BaseExtractor):
             RuntimeError: If the extractor model cannot be loaded.
 
         Returns:
-            npt.NDArray[numpy.float32]: The embedding vector with shape (512,) and dtype float32.
+            torch.Tensor: The embedding vector with shape (512,) and dtype float32.
         """
 
         # Load the extractor model
@@ -193,12 +193,9 @@ class TruForExtractor(BaseExtractor):
         last_stage_output: torch.Tensor = stages_outputs[3]
 
         # Global average pooling to get the embedding vector -> 512
-        embedding_vector: npt.NDArray[numpy.float32] = (
+        embedding_vector: torch.Tensor = (
             torch.mean(last_stage_output, dim=[2, 3])
             .squeeze(0)
-            .cpu()
-            .numpy()
-            .astype(numpy.float32)
         )
 
         return embedding_vector

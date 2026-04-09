@@ -11,7 +11,6 @@ and the integration between the IML_VIT repository and this project.
 from pathlib import Path
 
 import numpy
-import numpy.typing as npt
 import pytest
 import torch
 from PIL import Image
@@ -232,12 +231,12 @@ def test_extract_returns_768dim_float32_embedding_vector(
     Returns:
         None
     """
-    embedding: npt.NDArray[numpy.float32] = instantiate_iml_vit_extractor.extract(
+    embedding: torch.Tensor = instantiate_iml_vit_extractor.extract(
         create_identity_document
     )
-    assert isinstance(embedding, numpy.ndarray)
+    assert isinstance(embedding, torch.Tensor)
     assert embedding.shape == (768,)
-    assert embedding.dtype == numpy.float32
+    assert embedding.dtype == torch.float32
 
 
 def test_lazy_loading(
@@ -280,8 +279,8 @@ def test_validate_embedding_vector_values(
     Returns:
         None
     """
-    embedding_vector: npt.NDArray[numpy.float32] = instantiate_iml_vit_extractor.extract(
+    embedding_vector: torch.Tensor = instantiate_iml_vit_extractor.extract(
         create_identity_document
     )
-    assert numpy.all(numpy.isfinite(embedding_vector))
-    assert not numpy.all(embedding_vector == 0.0)
+    assert torch.all(torch.isfinite(embedding_vector))
+    assert not torch.all(embedding_vector == 0.0)
