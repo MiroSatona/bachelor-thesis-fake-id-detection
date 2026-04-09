@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn as nn
 
-from src.heads.constants import CLASSES_COUNT
+from src.heads.constants import CLASSES_COUNT, DROPOUT_PRECENTAGE
 
 
 class BaseHead(ABC, nn.Module):
@@ -26,7 +26,8 @@ class BaseHead(ABC, nn.Module):
     def __init__(
             self,
             input_dimension: int,
-            classification_classes_count: int = CLASSES_COUNT
+            classification_classes_count: int = CLASSES_COUNT,
+            dropout_precentage: float = DROPOUT_PRECENTAGE
         ) -> None:
         """
         Constructor for the BaseHead class.
@@ -35,6 +36,8 @@ class BaseHead(ABC, nn.Module):
             input_dimension (int): Dimension of the input feature vector.
             classification_classes_count (int): Number of classes for classification.
             Default is 2.
+            dropout_precentage (float): Dropout percentage for the MLP head. 
+            Default is 0.2.
             
         Returns:
             None
@@ -42,6 +45,7 @@ class BaseHead(ABC, nn.Module):
         super().__init__()
         self.input_dimension: int = input_dimension
         self.classification_classes_count: int = classification_classes_count
+        self.dropout_precentage: float = dropout_precentage
 
     @abstractmethod
     def forward(self, embedding_vector: torch.Tensor) -> torch.Tensor:
