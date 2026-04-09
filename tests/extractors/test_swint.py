@@ -11,6 +11,7 @@ between the SwinT repository and this project.
 from pathlib import Path
 
 import numpy
+import numpy.typing as npt
 import pytest
 import torch
 from PIL import Image
@@ -226,12 +227,12 @@ def test_extract_and_get_768dim_embedding_vector(
     Returns:
         None
     """
-    embedding_vector: torch.Tensor = instantiate_swin_extractor.extract(
+    embedding_vector: npt.NDArray[numpy.float32] = instantiate_swin_extractor.extract(
         create_identity_document
     )
-    assert isinstance(embedding_vector, torch.Tensor)
+    assert isinstance(embedding_vector, numpy.ndarray)
     assert embedding_vector.shape == (768,)
-    assert embedding_vector.dtype == torch.float32
+    assert embedding_vector.dtype == numpy.float32
 
 def test_lazy_loading(
         instantiate_swin_extractor: SwinExtractor
@@ -269,11 +270,11 @@ def test_extract_returns_768dim_float32_embedding_vector(
     Returns:
         None
     """
-    embedding_vector: torch.Tensor = instantiate_swin_extractor.extract(
+    embedding_vector: npt.NDArray[numpy.float32] = instantiate_swin_extractor.extract(
         create_identity_document
     )
-    assert torch.all(torch.isfinite(embedding_vector))
-    assert not torch.all(embedding_vector == 0.0)
+    assert numpy.all(numpy.isfinite(embedding_vector))
+    assert not numpy.all(embedding_vector == 0.0)
 
 def test_transform_is_built_on_load(
         instantiate_swin_extractor: SwinExtractor

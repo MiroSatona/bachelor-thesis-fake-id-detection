@@ -10,6 +10,8 @@ from identity document images.
 import sys
 from typing import Any
 
+import numpy
+import numpy.typing as npt
 import torch
 from PIL import Image
 
@@ -180,7 +182,7 @@ class SwinExtractor(BaseExtractor):
 	def extract(
 		self,
 		identity_document: IdentityDocumentImage,
-	) -> torch.Tensor:
+	) -> npt.NDArray[numpy.float32]:
 		"""
 		Method for extracting the feature vector from the image of the identity document using 
 		the Swin Transformer model.
@@ -193,7 +195,8 @@ class SwinExtractor(BaseExtractor):
 			RuntimeError: If the Swin Transformer model cannot be loaded.
 
 		Returns:
-			torch.Tensor: The extracted feature vector with shape [768] and dtype float32.
+			npt.NDArray[numpy.float32]: The extracted feature vector with shape [768] 
+			and dtype float32.
 		"""
 		
 		# Load the extractor model if it is not loaded
@@ -208,12 +211,13 @@ class SwinExtractor(BaseExtractor):
 		# Preprocess the image of the identity document to a tensor
 		image_tensor: torch.Tensor = self.preprocess_identity_document(identity_document)
 
-		# Extract the feature vector from the image tensor using the Swin Transformer model.
-		# forward_features applies avgpool internally and returns shape (B, 768).
+		# Extract the feature vector from the image tensor using the Swin Transformer model
 		with torch.no_grad():
 			embedding: torch.Tensor = swint.forward_features(image_tensor)
 
-		# Remove batch dimension to get the 768-dim feature vector
-		embedding_vector: torch.Tensor = embedding.squeeze(0)
+		# Global average pooling (H, W) -> 768-dim feature vector
+		embedding_vector: npt.NDArray[numpy.float32] = (
+			embedding.squeeze(0).cpu().numpy().astype(numpy.float32)
+		)
 
 		return embedding_vector
