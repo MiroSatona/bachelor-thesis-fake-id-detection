@@ -190,10 +190,10 @@ class IMLViTExtractor(BaseExtractor):
     def extract(
         self,
         identity_document: IdentityDocumentImage,
-    ) -> torch.Tensor:
+    ) -> npt.NDArray[numpy.float32]:
         """
         Method for extracting a 768-dimensional embedding vector from an identity document image 
-        using the IML-ViT model. The image is processed through the Vision Transformer encoder 
+        using the IML-ViT model.The image is processed through the Vision Transformer encoder 
         with window-based attention, which produces a spatial feature map 
         (last_feat in the IML-ViT implementation). The final embedding vector is obtained 
         from this feature map by applying global average pooling.
@@ -206,7 +206,7 @@ class IMLViTExtractor(BaseExtractor):
             RuntimeError: If the extractor model cannot be loaded.
 
         Returns:
-            torch.Tensor: The embedding vector with shape (768,) and dtype float32.
+            npt.NDArray[numpy.float32]: The embedding vector with shape (768,) and dtype float32.
         """
 
         # Load the extractor model
@@ -229,9 +229,12 @@ class IMLViTExtractor(BaseExtractor):
         last_feat: torch.Tensor = encoder_outputs["last_feat"]
 
         # Global average pooling over spatial dimensions (H, W) -> 768
-        embedding_vector: torch.Tensor = (
+        embedding_vector: npt.NDArray[numpy.float32] = (
             torch.mean(last_feat, dim=[2,3])
             .squeeze(0)
+            .cpu()
+            .numpy()
+            .astype(numpy.float32)
         )
 
         return embedding_vector
