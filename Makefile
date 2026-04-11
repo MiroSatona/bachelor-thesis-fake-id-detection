@@ -86,6 +86,13 @@ test_extractors:
 	@$(MAKE) build
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/extractors/
 
+test_heads:
+	@echo "Testing the heads."
+	@echo "Setting up environment for testing."
+	@$(MAKE) build
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/heads/
+
+
 # Ruff code quality check
 ruff_check:
 	@echo "Running ruff for code quality check."
