@@ -2,7 +2,7 @@
 Author: Martin Zůbek
 Date: 2026-03-28
 File: iml_vit.py
-Description: This file contains the implementation of the IMLViTExtractor class which is a wrapper 
+Description: This file contains the implementation of the IMLViTExtractor class which as a wrapper 
 around the IML-ViT (Image Manipulation Localization via Vision Transformer) for extracting 
 features from identity document images.
 """
@@ -29,7 +29,7 @@ from src.extractors.constants import (
 
 class IMLViTExtractor(BaseExtractor):
     """
-    Class which is a wrapper around the IML-ViT (Image Manipulation Localization via 
+    Class which is wrapper around the IML-ViT (Image Manipulation Localization via 
     Vision Transformer) for extracting features from identity document images.
 
     Attributes:
@@ -136,7 +136,7 @@ class IMLViTExtractor(BaseExtractor):
         # If the original size of the image is smaller than the input size of the IML-ViT model, 
         # will be padded with black pixels.
         #
-        # This and other processing steps in this method are based
+        # This and other proccessing steps in this method are based
         # on the code from the IML-ViT repository.
         #
         # REF: external/IML_VIT/utils/datasets.py
@@ -178,7 +178,7 @@ class IMLViTExtractor(BaseExtractor):
             dtype=numpy.float32
         )
 
-        # Use the ImageNet mean and standard deviation to normalize the image
+        # Uset the ImageNet mean and standard deviation to normalize the image
         preprocess_image: npt.NDArray[numpy.float32] = (image_array - imagenet_mean) / imagenet_std
 
         # Reorganize the dimensions from [Height, Width, Channels] to [Channels, Height, Width]
@@ -190,10 +190,10 @@ class IMLViTExtractor(BaseExtractor):
     def extract(
         self,
         identity_document: IdentityDocumentImage,
-    ) -> npt.NDArray[numpy.float32]:
+    ) -> torch.Tensor:
         """
         Method for extracting a 768-dimensional embedding vector from an identity document image 
-        using the IML-ViT model.The image is processed through the Vision Transformer encoder 
+        using the IML-ViT model. The image is processed through the Vision Transformer encoder 
         with window-based attention, which produces a spatial feature map 
         (last_feat in the IML-ViT implementation). The final embedding vector is obtained 
         from this feature map by applying global average pooling.
@@ -206,7 +206,7 @@ class IMLViTExtractor(BaseExtractor):
             RuntimeError: If the extractor model cannot be loaded.
 
         Returns:
-            npt.NDArray[numpy.float32]: The embedding vector with shape (768,) and dtype float32.
+            torch.Tensor: The embedding vector with shape (768,) and dtype float32.
         """
 
         # Load the extractor model
@@ -229,12 +229,9 @@ class IMLViTExtractor(BaseExtractor):
         last_feat: torch.Tensor = encoder_outputs["last_feat"]
 
         # Global average pooling over spatial dimensions (H, W) -> 768
-        embedding_vector: npt.NDArray[numpy.float32] = (
+        embedding_vector: torch.Tensor = (
             torch.mean(last_feat, dim=[2,3])
             .squeeze(0)
-            .cpu()
-            .numpy()
-            .astype(numpy.float32)
         )
 
         return embedding_vector
