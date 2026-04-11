@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 
 from src.heads.constants import CLASSES_COUNT, DROPOUT_PRECENTAGE
+from src.heads.constants import CLASSES_COUNT
 
 
 class BaseHead(ABC, nn.Module):
@@ -28,6 +29,7 @@ class BaseHead(ABC, nn.Module):
             input_dimension: int,
             classification_classes_count: int = CLASSES_COUNT,
             dropout_precentage: float = DROPOUT_PRECENTAGE
+            classification_classes_count: int = CLASSES_COUNT
         ) -> None:
         """
         Constructor for the BaseHead class.

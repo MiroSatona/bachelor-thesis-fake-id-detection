@@ -11,7 +11,6 @@ and the integration between the IML_VIT repository and this project.
 from pathlib import Path
 
 import numpy
-import numpy.typing as npt
 import pytest
 import torch
 from PIL import Image
@@ -138,7 +137,7 @@ def test_shape_of_preprocess_image(
     assert image_tensor.shape == (1, 3, IML_VIT_INPUT_SIZE, IML_VIT_INPUT_SIZE)
     assert image_tensor.dtype == torch.float32
 
-def test_preprocess_pads_small_images(
+def test_preproccess_pads_small_images(
         instantiate_iml_vit_extractor: IMLViTExtractor, 
         create_identity_document: IdentityDocumentImage
     ) -> None:
@@ -164,7 +163,7 @@ def test_preprocess_pads_small_images(
 
 
 
-def test_preprocess_crops_large_images(
+def test_preproccess_crops_large_images(
         instantiate_iml_vit_extractor: IMLViTExtractor, 
         create_large_identity_document: IdentityDocumentImage
     ) -> None:
@@ -232,19 +231,19 @@ def test_extract_returns_768dim_float32_embedding_vector(
     Returns:
         None
     """
-    embedding: npt.NDArray[numpy.float32] = instantiate_iml_vit_extractor.extract(
+    embedding: torch.Tensor = instantiate_iml_vit_extractor.extract(
         create_identity_document
     )
-    assert isinstance(embedding, numpy.ndarray)
+    assert isinstance(embedding, torch.Tensor)
     assert embedding.shape == (768,)
-    assert embedding.dtype == numpy.float32
+    assert embedding.dtype == torch.float32
 
 
 def test_lazy_loading(
         instantiate_iml_vit_extractor: IMLViTExtractor
     ) -> None:
     """
-    Tests that calling load_extractor() multiple times does not reload the model -
+    Tests that calling load_extractor() multiple times is and testing if the model is not reload,
     the same model instance is reused across repeated calls.
     
     Arguments:
@@ -280,8 +279,8 @@ def test_validate_embedding_vector_values(
     Returns:
         None
     """
-    embedding_vector: npt.NDArray[numpy.float32] = instantiate_iml_vit_extractor.extract(
+    embedding_vector: torch.Tensor = instantiate_iml_vit_extractor.extract(
         create_identity_document
     )
-    assert numpy.all(numpy.isfinite(embedding_vector))
-    assert not numpy.all(embedding_vector == 0.0)
+    assert torch.all(torch.isfinite(embedding_vector))
+    assert not torch.all(embedding_vector == 0.0)
