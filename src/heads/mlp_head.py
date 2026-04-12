@@ -26,7 +26,8 @@ class MLPHead(BaseHead):
     def __init__(
             self,
             input_dimension: int,
-            classification_classes_count: int = CLASSES_COUNT
+            classification_classes_count: int = CLASSES_COUNT,
+            dropout_precentage: float = DROPOUT_PRECENTAGE
         ) -> None:
         """
         Constructor for the MLPHead class.
@@ -35,12 +36,16 @@ class MLPHead(BaseHead):
             input_dimension (int): Dimension of the input feature vector.
             classification_classes_count (int): Number of classes for classification.
             Default is 2.
+            dropout_precentage (float): Dropout percentage for the MLP head.
+            Default is 0.2.
 
         Returns:
             None
         """
         # Create the instance of the BaseHead class
-        super().__init__(input_dimension, classification_classes_count)
+        super().__init__(
+            input_dimension, classification_classes_count, dropout_precentage
+            )
         # Calculate the dimension of the hidden layer
         self.intermediate_dimension: int = self.input_dimension // 2
 
@@ -56,7 +61,7 @@ class MLPHead(BaseHead):
         self.mlp_classification_head: nn.Sequential = nn.Sequential(
             nn.Linear(self.input_dimension, self.intermediate_dimension),
             nn.GELU(),
-            nn.Dropout(DROPOUT_PRECENTAGE),
+            nn.Dropout(self.dropout_precentage),
             nn.Linear(self.intermediate_dimension, self.classification_classes_count)
         )
 
