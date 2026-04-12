@@ -59,6 +59,13 @@ build:
 		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
 	fi
 
+# Running all the tests of the project
+test_all:
+	@$(MAKE) build
+
+	@echo "Running all the tests of the project."
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)
+
 # Running the tests for the data processing
 test_data_processing:
 	@echo "Testing the data processing pipeline."
@@ -79,12 +86,26 @@ test_data_processing:
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/unit
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/integrations
 
-
+# Running the tests for the extractors
 test_extractors:
 	@echo "Testing the extractors."
 	@echo "Setting up environment for testing."
 	@$(MAKE) build
 	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/extractors/
+
+# Running the tests for the heads
+test_heads:
+	@echo "Testing the heads."
+	@echo "Setting up environment for testing."
+	@$(MAKE) build
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/heads/
+
+# Running the tests for the training
+test_training:
+	@echo "Testing the training."
+	@echo "Setting up environment for testing."
+	@$(MAKE) build
+	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/training/
 
 # Ruff code quality check
 ruff_check:
@@ -148,4 +169,4 @@ clean:
 	@rm -rf "$(RUFF_CACHE_DIR)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
-.PHONY: build zip clean test_data_processing test_extractors ruff_check ruff_fix mypy_check
+.PHONY: build zip clean test_data_processing test_alltest_extractors test_heads test_training ruff_check ruff_fix mypy_check
