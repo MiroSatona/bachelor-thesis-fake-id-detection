@@ -2,7 +2,8 @@
 Author: Martin Zůbek
 Date: 2026-04-05
 File: model.py
-Description: 
+Description: This file contains the implementation of the Model class which concatates all the components
+of the project together for creating a represenation of the model for training, validating and testing.
 """
 from pathlib import Path
 
@@ -26,14 +27,24 @@ from src.heads.constants import (
     TRUFOR_KEY,
 )
 from src.heads.mlp_head import MLPHead
-from src.training.constants import LOSS
+from src.training.constants import (
+    CHECKPOINT_MODEL_FILE_NAME,
+    EARLY_STOPPING_DELTA,
+    EARLY_STOPPING_PATIENCE,
+    LOSS,
+    OPTIM_FACTOR,
+    OPTIM_MIN_LR,
+    OPTIM_PATIENCE,
+)
 from src.training.metrics import MetricsHandler
 from src.training.train_logger import TrainLogger
 
 
 class Model():
     """
-    
+    Class representing the model for training, validating and testing. It contains all the components of 
+    the project together and provides methods for training, validating and testing the model.
+
     Attributes:
         batch_size (int): The batch size for training the model.
         number_of_epochs (int): The number of epochs for training the model.
@@ -70,9 +81,6 @@ class Model():
             learning_rate (float): The learning rate for training the model.
             dropout_percentage (float): The dropout percentage for the head of the model. 
             Default is 0.2.
-
-        Raise:
-            ValueError: If the provided extractor name is not supported.
 
         Returns:
             None
@@ -134,6 +142,8 @@ class Model():
 
     def train(self) -> None:
         """
+        Method for handle the training of the model.
+
         Arguments:
             None
 
@@ -164,25 +174,35 @@ class Model():
         val_loss_not_improved: int = 0
         # Index of the best epoch
         best_epoch_index: int = -1
+        # Scheduler for learning rate control
+        scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='min',
+            factor=OPTIM_FACTOR,
+            patience=OPTIM_PATIENCE,
+            min_lr=OPTIM_MIN_LR,
+        )
 
         for epoch in range(self.number_of_epochs):
             # Set the head to training mode
             self.head.train()
             # Loss for the current epoch
             epoch_loss: float = 0.0
-            # Number of correct classifications
-            correct_classifications: int = 0
             # Total number of identity documents processed
             total_identity_documents: int = 0
             # List of all predictions for the current epoch
             epoch_all_predictions: list[torch.Tensor] = []
             # List of all labels for the current epoch
             epoch_all_labels: list[torch.Tensor] = []
+            # Shuffle the training data for the epoch
+            shuffled_train_data: list[IdentityDocumentImage] = self.data_handler.shuffle_epoch_training_data(
+                train_data
+            )
 
             # Iterate over the training data in batches
-            for batch_iterator in range(0, len(train_data), self.batch_size):
+            for batch_iterator in range(0, len(shuffled_train_data), self.batch_size):
                 # Get the current batch of data
-                batch_data = train_data[batch_iterator:batch_iterator + self.batch_size]
+                batch_data = shuffled_train_data[batch_iterator:batch_iterator + self.batch_size]
 
                 # List of embeddings for the current batch
                 batch_embeddings: list[torch.Tensor] = []
@@ -223,12 +243,12 @@ class Model():
 
                 # Update the epoch loss
                 epoch_loss += loss.item() * batch_embeddings_tensor.size(0)
-                # Update the number of correct classifications
-                correct_classifications += (
-                    predictions.argmax(dim=1) == batch_labels_tensor
-                ).sum().item()
                 # Update the total number of identity documents processed
                 total_identity_documents += len(batch_data)
+                # Append the predictions of the current batch
+                epoch_all_predictions.append(predictions.detach().cpu())
+                # Append the labels of the current batch
+                epoch_all_labels.append(batch_labels_tensor.detach().cpu())
 
             # Calculate the training loss for the current epoch
             train_loss: float = epoch_loss / total_identity_documents
@@ -246,16 +266,22 @@ class Model():
 
             # Validate the model on the validation set
             self.validate(loss_function)
+            # Step of the scheduler for learning rate control based on the validation loss
+            scheduler.step(self.metrics_handler_val.history[-1][LOSS])
 
-            if self.metrics_handler_val.history[-1][LOSS] < best_val_loss - 0.001:
+            if self.metrics_handler_val.history[-1][LOSS] < best_val_loss - EARLY_STOPPING_DELTA:
                 best_val_loss = self.metrics_handler_val.history[-1][LOSS]
                 val_loss_not_improved = 0
                 best_epoch_index = epoch
+                # Save the the model weights
+                self.train_logger.save_checkpoint(
+                    CHECKPOINT_MODEL_FILE_NAME, self.head
+                )
             else:
                 val_loss_not_improved += 1
 
-            if val_loss_not_improved >= 5:
-                print(f"Early stopping at epoch {epoch + 1} due to no improvement in validation loss.")
+            if val_loss_not_improved >= EARLY_STOPPING_PATIENCE:
+                print("")
                 break
 
         # Save the metrics of the training and validation phases after the training is finished
@@ -264,10 +290,9 @@ class Model():
             validation_history=self.metrics_handler_val.history,
         )
 
-
-
+        # Save the summary of the training process
         self.train_logger.save_summary(
-            best_epoch_index=best_epoch_index,
+            best_epoch_index=best_epoch_index + 1,
             train_history=self.metrics_handler_train.history,
             validation_history=self.metrics_handler_val.history,
         )
@@ -278,41 +303,39 @@ class Model():
             validation_history=self.metrics_handler_val.history,
         )
 
-
-
-
-    def validate(self, loss_function: torch.nn.CrossEntropyLoss) -> None:
+    def evaluate_dataset(
+        self,
+        data: list[IdentityDocumentImage],
+        loss_function: torch.nn.CrossEntropyLoss
+    ) -> tuple[float, torch.Tensor, torch.Tensor]:
         """
+        Helper method for evaluating the model on a dataset.
+
         Arguments:
-            loss_function (torch.nn.CrossEntropyLoss): The loss function 
-            used for calculating the validation loss.
+            data (list[IdentityDocumentImage]): The data to evaluate.
+            loss_function (torch.nn.CrossEntropyLoss): The loss function used for calculating the loss.
 
         Returns:
-            None
+            tuple[float, torch.Tensor, torch.Tensor]: The average loss, all predictions
+            and all labels for the dataset.
         """
-        
-        # Set the head to evaluation mode
-        self.head.eval()
-
-        # Loss for the validation
-        validation_loss: float = 0.0
+        # Loss for the evaluation
+        total_loss: float = 0.0
         # Total number of identity documents processed
         total_identity_documents: int = 0
-        # Get the validation data from the dataset
-        validation_data: list[IdentityDocumentImage] = self.data.val_data
-        # List of all predictions for the current epoch
-        epoch_all_predictions: list[torch.Tensor] = []
-        # List of all labels for the current epoch
-        epoch_all_labels: list[torch.Tensor] = []
+        # List of all predictions
+        all_predictions: list[torch.Tensor] = []
+        # List of all labels
+        all_labels: list[torch.Tensor] = []
 
         with torch.no_grad():
-            # Iterate over the validation data in batches
-            for batch_iterator in range(0, len(validation_data), self.batch_size):
+            # Iterate over the data in batches
+            for batch_iterator in range(0, len(data), self.batch_size):
                 # Get the current batch of data
-                batch_data: list[IdentityDocumentImage] = validation_data[
+                batch_data: list[IdentityDocumentImage] = data[
                     batch_iterator:batch_iterator + self.batch_size
                 ]
-                
+
                 # List of tensors of the embeddings for the current batch
                 embeddings_tensor: list[torch.Tensor] = []
                 # List of the labels for the current batch
@@ -324,44 +347,66 @@ class Model():
                     embeddings_tensor.append(embedding_tensor)
                     labels.append(identity_document.label.value)
 
-                # Collect list of the tensors of the embedings to matrix with batch size
+                # Collect list of the tensors of the embeddings to matrix with batch size
                 # and move to the same device as the extractor and head
-                batch_embedding_tensor: torch.Tensor = torch.stack(embeddings_tensor).to(
+                batch_embeddings_tensor: torch.Tensor = torch.stack(embeddings_tensor).to(
                     self.extractor.device
                 )
                 # Convert labels to tensor and move to the extractors and heads device
                 batch_labels_tensor: torch.Tensor = torch.tensor(
                     labels, dtype=torch.long, device=self.extractor.device
                 )
-                
+
                 # Forward pass through the head to get predictions
-                predictions: torch.Tensor = self.head(batch_embedding_tensor)
+                predictions: torch.Tensor = self.head(batch_embeddings_tensor)
                 # Calculate the loss
                 loss: torch.Tensor = loss_function(predictions, batch_labels_tensor)
 
-                # Update the validation loss
-                validation_loss += loss.item() * batch_embedding_tensor.size(0)
-                # Update the number of processed identity documents
+                # Update the total loss
+                total_loss += loss.item() * batch_embeddings_tensor.size(0)
+                # Update the total number of identity documents processed
                 total_identity_documents += len(batch_data)
-
                 # Append the predictions of the current batch
-                epoch_all_predictions.append(predictions)
+                all_predictions.append(predictions.detach().cpu())
                 # Append the labels of the current batch
-                epoch_all_labels.append(batch_labels_tensor)
+                all_labels.append(batch_labels_tensor.detach().cpu())
 
-        # Concatenate all batch predictions and labels into a single tensor
-        epoch_predictions_tensor: torch.Tensor = torch.cat(epoch_all_predictions, dim=0)
-        epoch_labels_tensor: torch.Tensor = torch.cat(epoch_all_labels, dim=0)
+        # Return the average loss and concatenated predictions and labels
+        return (
+            total_loss / total_identity_documents,
+            torch.cat(all_predictions, dim=0),
+            torch.cat(all_labels, dim=0)
+        )
+
+    def validate(self, loss_function: torch.nn.CrossEntropyLoss) -> None:
+        """
+        Method for handle the validation of the model.
+
+        Arguments:
+            loss_function (torch.nn.CrossEntropyLoss): The loss function 
+            used for calculating the validation loss.
+
+        Returns:
+            None
+        """
+        # Set the head to evaluation mode
+        self.head.eval()
+
+        # Evaluate the model on the validation data
+        validation_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate_dataset(
+            self.data.val_data, loss_function
+        )
 
         # Save the metrics for the current epoch which is validated
         self.metrics_handler_val.add_epoch_metrics(
             epoch_predictions=epoch_predictions_tensor,
             epoch_labels=epoch_labels_tensor,
-            loss=validation_loss / total_identity_documents
+            loss=validation_loss
         )
 
     def test(self) -> None:
         """
+        Method for handle the testing of the model.
 
         Arguments:
             None
@@ -382,72 +427,20 @@ class Model():
 
         # Set up the loss function
         loss_function = torch.nn.CrossEntropyLoss()
-        # Get the test data from the dataset
-        test_data: list[IdentityDocumentImage] = self.data.test_data
 
-        # Loss for the test phase
-        test_loss: float = 0.0
-        # Total number of identity documents processed
-        total_identity_documents: int = 0
-        # List of all predictions for the test phase
-        epoch_all_predictions: list[torch.Tensor] = []
-        # List of all labels for the test phase
-        epoch_all_labels: list[torch.Tensor] = []
-
-        with torch.no_grad():
-            # Iterate over the test data in batches
-            for batch_iterator in range(0, len(test_data), self.batch_size):
-                # Get data for the current batch
-                batch_data: list[IdentityDocumentImage] = test_data[
-                    batch_iterator:batch_iterator + self.batch_size
-                ]
-
-                # List of tensors of the embeddings for the current batch
-                embeddings_tensor: list[torch.Tensor] = []
-                # List of the labels for the current batch
-                labels: list[int] = []
-
-                # Extract embeddings for the current batch and collect labels
-                for identity_document in batch_data:
-                    embedding_tensor: torch.Tensor = self.extractor.extract(identity_document)
-                    embeddings_tensor.append(embedding_tensor)
-                    labels.append(identity_document.label.value)
-
-                # Collect list of the tensors of the embedings to matrix with batch size
-                # and move to the same device as the extractor and head
-                batch_embeddings_tensor: torch.Tensor = torch.stack(embeddings_tensor).to(
-                    self.extractor.device
-                )
-                # Convert labels to tensor and move to the extractors and heads device
-                batch_labels_tensor: torch.Tensor = torch.tensor(
-                    labels, dtype=torch.long, device=self.extractor.device
-                )
-
-                # Forward pass through the head to get predictions
-                predictions: torch.Tensor = self.head(batch_embeddings_tensor)
-                # Calculate the loss
-                loss: torch.Tensor = loss_function(predictions, batch_labels_tensor)
-
-                # Update the test loss
-                test_loss += loss.item() * batch_embeddings_tensor.size(0)
-                # Update the total number of identity documents processed
-                total_identity_documents += len(batch_data)
-                # Accumulate predictions and labels for the test phase
-                epoch_all_predictions.append(predictions)
-                epoch_all_labels.append(batch_labels_tensor)
-
-        # Concatenate all predictions and labels for the test phase
-        epoch_predictions_tensor: torch.Tensor = torch.cat(epoch_all_predictions, dim=0)
-        epoch_labels_tensor: torch.Tensor = torch.cat(epoch_all_labels, dim=0)
+        # Evaluate the model on the test data
+        test_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate_dataset(
+            self.data.test_data, loss_function
+        )
 
         # Calculate and store metrics for the test phase
         self.metrics_handler_test.add_epoch_metrics(
             epoch_predictions=epoch_predictions_tensor,
             epoch_labels=epoch_labels_tensor,
-            loss=test_loss / total_identity_documents
+            loss=test_loss
         )
 
-        # Calculate the confusion
+        # Calculate the confusion matrix
         confusion_matrix: dict[str, int] = self.metrics_handler_test.calculate_confusion_matrix(
             tests_predictions=epoch_predictions_tensor.argmax(dim=1),
             tests_labels=epoch_labels_tensor
