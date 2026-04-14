@@ -189,3 +189,92 @@ def test_split_identity_documents_for_dataset_deterministic() -> None:
     assert [identity_document.path for identity_document in first_dataset.test_data] == [
         identity_document.path for identity_document in second_dataset.test_data
     ]
+
+def test_epoch_shuffle_reuturns_same_set() -> None:
+    """
+    Test for checking that shuffling the training data for an epoch returns set with same 
+    identity documents.
+
+    Arguments:
+        None
+
+    Returns:
+        None
+    """
+    splitter: DatasetSplitter = DatasetSplitter()
+    identity_documents: list[IdentityDocumentImage] = create_valid_list_with_identity_documents()
+
+    shuffled_training_data: list[IdentityDocumentImage] = (
+        splitter.training_shuffle(identity_documents)
+    )
+
+    assert sorted(
+        str(identity_document.path) for identity_document in shuffled_training_data
+    ) == sorted(
+        str(identity_document.path) for identity_document in identity_documents
+    )
+
+def test_epoch_shuffle_returns_new_list() -> None:
+    """
+    Test for checking that shuffling the training data for an epoch return a new list
+    and does not modify the original list.
+    
+    Arguments:
+        None
+        
+    Returns:
+        None
+    """
+
+    splitter: DatasetSplitter = DatasetSplitter()
+    identity_documents: list[IdentityDocumentImage] = create_valid_list_with_identity_documents()
+    original_training_data: list[IdentityDocumentImage] = identity_documents.copy()
+
+    shuffled_training_data: list[IdentityDocumentImage] = (
+        splitter.training_shuffle(identity_documents)
+    )
+
+    assert shuffled_training_data is not identity_documents
+    assert identity_documents == original_training_data
+
+def test_epoch_shuffle_empty_list() -> None:
+    """
+    Test for checking that shuffling a empty list of training data for an epoch returns 
+    an empty list.
+
+    Arguments:
+        None
+    
+    Returns:
+        None
+    """
+    splitter: DatasetSplitter = DatasetSplitter()
+    identity_documents: list[IdentityDocumentImage] = []
+
+    shuffled_training_data: list[IdentityDocumentImage] = (
+        splitter.training_shuffle(identity_documents)
+    )
+
+    assert shuffled_training_data == []
+
+
+def test_epoch_shuffle_chenges_order() -> None:
+    """
+    Test for checking that shuffling the training data for an epoch changes the order 
+    of the identity documents.
+
+    Arguments:
+        None
+
+    Returns:
+        None
+    """
+
+    splitter: DatasetSplitter = DatasetSplitter()
+    identity_documents: list[IdentityDocumentImage] = create_valid_list_with_identity_documents()
+
+    shuffled_training_data: list[IdentityDocumentImage] = (
+        splitter.training_shuffle(identity_documents)
+    )
+
+    assert shuffled_training_data != identity_documents
