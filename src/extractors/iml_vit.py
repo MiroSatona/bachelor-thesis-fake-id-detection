@@ -10,6 +10,11 @@ features from identity document images.
 import sys
 from pathlib import Path
 
+# Add the directory with the IML-ViT code to the system path for importing extractor
+IML_VIT_DIR: str = str(Path(__file__).resolve().parents[2] / "external" / "IML_VIT")
+if IML_VIT_DIR not in sys.path:
+    sys.path.insert(0, IML_VIT_DIR)
+
 import numpy
 import numpy.typing as npt
 import torch
@@ -20,18 +25,12 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
-    EXTRACTORS_DIR_STR,
     IMAGENET_MEAN,
     IMAGENET_STD,
     IML_VIT_CHECKPOINT,
     IML_VIT_INPUT_SIZE,
     IML_VIT_NAME,
 )
-
-# Add the directory with the IML-ViT code to the system path for imporing extractor
-IML_VIT_DIR = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR / IML_VIT_NAME
-if str(IML_VIT_DIR) not in sys.path:
-    sys.path.insert(0, str(IML_VIT_DIR))
 
 
 class IMLViTExtractor(BaseExtractor):
