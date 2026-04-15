@@ -35,7 +35,7 @@ build:
 
 	@echo "Installing project dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .
+	@"$(ENV_DIR)/bin/pip" install -e .[dev]
 
 	@if [ ! -d "$(EXTERNAL_DIR)" ]; then \
 		echo "Downloading extractors."; \
@@ -58,6 +58,24 @@ build:
 		echo "Installing MMFusion dependencies."; \
 		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
 	fi
+
+# Build of the application for running the GUI
+build_app:
+	@echo "Setting up application environment."
+
+	@if [ ! -d "$(ENV_DIR)" ]; then \
+		echo "Creating virtual environment."; \
+		python3.12 -m venv "$(ENV_DIR)"; \
+		"$(ENV_DIR)/bin/pip" install --upgrade pip; \
+	else \
+		echo "Virtual environment already exists."; \
+	fi
+
+	@echo "Installing application dependencies."
+	@mkdir -p "$(META_DIR)"
+	@"$(ENV_DIR)/bin/pip" install -e .
+
+# TODO: Add target model for running the application and run the script for downlaoad the checkpoint of the model	
 
 # Running all the tests of the project
 test_all:
@@ -169,4 +187,4 @@ clean:
 	@rm -rf "$(RUFF_CACHE_DIR)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
-.PHONY: build zip clean test_data_processing test_all test_extractors test_heads test_training ruff_check ruff_fix mypy_check
+.PHONY: build build_app zip clean test_data_processing test_all test_extractors test_heads test_training ruff_check ruff_fix mypy_check
