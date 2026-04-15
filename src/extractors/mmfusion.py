@@ -8,6 +8,7 @@ from identity document images. The model combines four input modalities:
 RGB, Noiseprint++, Bayar convolution and SRM filter to detect image manipulation anomalies.
 """
 
+import sys
 from pathlib import Path
 
 import numpy
@@ -24,6 +25,7 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
+    EXTRACTORS_DIR_STR,
     IMAGENET_MEAN,
     IMAGENET_STD,
     MMFUSION_CHECKPOINT,
@@ -32,6 +34,10 @@ from src.extractors.constants import (
     MMFUSION_NP_WEIGHTS,
 )
 
+# Add the directory with the MMFusion code to the system path for imporing extractor
+MMFUSION_DIR = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR / MMFUSION_NAME
+if str(MMFUSION_DIR) not in sys.path:
+    sys.path.insert(0, str(MMFUSION_DIR))
 
 class MMFusionExtractor(BaseExtractor):
     """
