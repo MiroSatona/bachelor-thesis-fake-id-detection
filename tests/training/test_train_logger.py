@@ -214,11 +214,31 @@ def test_save_checkpoint(logger: TrainLogger) -> None:
         None
     """
     model = torch.nn.Linear(4, 2)
-    logger.save_checkpoint("best_model.pth", model)
-    checkpoint_path = logger.checkpoints_dir / "best_model.pth"
+    logger.save_checkpoint("checkpoint.pth", model)
+    checkpoint_path = logger.checkpoints_dir / "checkpoint.pth"
     assert checkpoint_path.exists()
     state_dict = torch.load(checkpoint_path, weights_only=True)
     assert "weight" in state_dict
+
+def test_load_checkpoint(logger: TrainLogger) -> None:
+    """
+    Test that the load_checkpoint method correctly loads a saved checkpoint into a model.
+
+    Arguments:
+        logger (TrainLogger): The TrainLogger instance to test.
+
+    Returns:
+        None
+    """
+    model = torch.nn.Linear(4, 2)
+    logger.save_checkpoint("checkpoint.pth", model)
+
+    new_model = torch.nn.Linear(4, 2)
+    logger.load_checkpoint("checkpoint.pth", new_model)
+
+    for key in model.state_dict():
+        assert torch.equal(model.state_dict()[key], new_model.state_dict()[key])
+
 
 def test_save_test_results(
         logger: TrainLogger,
