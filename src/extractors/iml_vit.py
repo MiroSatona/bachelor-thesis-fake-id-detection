@@ -7,7 +7,13 @@ around the IML-ViT (Image Manipulation Localization via Vision Transformer) for 
 features from identity document images.
 """
 
+import sys
 from pathlib import Path
+
+# Add the directory with the IML-ViT code to the system path for importing extractor
+IML_VIT_DIR: str = str(Path(__file__).resolve().parents[2] / "external" / "IML_VIT")
+if IML_VIT_DIR not in sys.path:
+    sys.path.insert(0, IML_VIT_DIR)
 
 import numpy
 import numpy.typing as npt
