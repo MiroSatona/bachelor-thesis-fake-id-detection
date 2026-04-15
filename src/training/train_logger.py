@@ -10,7 +10,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as pyplot
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as pyplot  # noqa: E402
 import torch
 
 from src.training.constants import (
