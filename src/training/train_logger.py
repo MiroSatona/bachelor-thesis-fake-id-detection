@@ -196,16 +196,36 @@ class TrainLogger:
         head: torch.nn.Module
     ) -> None:
         """
-        Method for saving the checkpoint of the model.
+        Method for saving the checkpoint of the classifier head.
 
         Arguments:
             file_name (str): The name of the checkpoint file.
-            head (torch.nn.Module): The model to save.
+            head (torch.nn.Module): The classifier head to save.
 
         Returns:
             None
         """
         torch.save(head.state_dict(), self.checkpoints_dir / file_name)
+
+    def load_checkpoint(
+            self,
+            file_name: str,
+            head: torch.nn.Module
+        ) -> None:
+            """
+            Method for loading a checkpoint into the classifier head.
+
+            Arguments:
+                file_name (str): The name of the checkpoint file.
+                head (torch.nn.Module): The classifier head to load the checkpoint into.
+
+            Returns:
+                None
+            """
+            head.load_state_dict(
+                torch.load(self.checkpoints_dir / file_name, weights_only=True)
+            )
+
 
     def save_metric_graph(
             self,
