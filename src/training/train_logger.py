@@ -7,12 +7,11 @@ validation and test metrics.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
-import matplotlib
-
-matplotlib.use("Agg")
+os.environ.pop("MPLBACKEND", None)
 import matplotlib.pyplot as pyplot  # noqa: E402
 import torch
 
