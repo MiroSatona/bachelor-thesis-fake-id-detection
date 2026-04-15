@@ -1,6 +1,7 @@
 # Author: Martin Zůbek
 # Date: 2026-03-26
-# Description: pyproject.toml configuration for the Bachelor thesis project. This file defines build system requirements and project metadata.
+# Description: pyproject.toml configuration for the Bachelor thesis project. 
+# This file defines build system requirements and project metadata.
 
 # Build system configuration
 [build-system]
@@ -51,6 +52,13 @@ line-length = 100
 # Set up the ruff lint rules
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+# Manipulation with the sys.path for extractors
+[tool.ruff.lint.per-file-ignores]
+"src/extractors/iml_vit.py" = ["E402"]
+"src/extractors/trufor.py" = ["E402"]
+"src/extractors/mmfusion.py" = ["E402"]
+"src/extractors/swint.py" = ["E402"]
 
 # Configuraton of Ruff formatting
 [tool.ruff.format]
