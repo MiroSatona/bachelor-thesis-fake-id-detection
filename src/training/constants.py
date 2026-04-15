@@ -38,10 +38,11 @@ GRAPHS_DIR: str = "graphs"
 CHECKPOINTS_DIR: str = "checkpoints"
 TEST_DIR: str = "test"
 
-# Names for configuration, metrics and summary files
+# Names for configuration, metrics and summary files and checkpoint file
 CONFIG_FILE_NAME: str = "config.json"
 METRICS_FILE_NAME: str = "metrics.json"
 SUMMARY_FILE_NAME: str = "summary.json"
+CHECKPOINT_FILE_NAME: str = "checkpoint.pth"
 
 # Files from the test phase
 TEST_METRICS_FILE_NAME: str = "test_metrics.json"
