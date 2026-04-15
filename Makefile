@@ -169,4 +169,4 @@ clean:
 	@rm -rf "$(RUFF_CACHE_DIR)"
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
-.PHONY: build zip clean test_data_processing test_alltest_extractors test_heads test_training ruff_check ruff_fix mypy_check
+.PHONY: build zip clean test_data_processing test_all test_extractors test_heads test_training ruff_check ruff_fix mypy_check
