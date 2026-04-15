@@ -2,8 +2,9 @@
 Author: Martin Zůbek
 Date: 2026-04-05
 File: model.py
-Description: This file contains the implementation of the Model class which concatates all the components
-of the project together for creating a represenation of the model for training, validating and testing.
+Description: This file contains the implementation of the Model class which concatates all the 
+components of the project together for creating a represenation of the model for training,
+validating and testing.
 """
 from pathlib import Path
 
@@ -20,7 +21,7 @@ from src.extractors.trufor import TruForExtractor
 from src.heads.base_head import BaseHead
 from src.heads.constants import (
     DROPOUT_PRECENTAGE,
-    EXTRACTORS_DIMENSIONS,
+    EXTRACTORS_DIMENSION,
     IMLVIT_KEY,
     MMFUSION_KEY,
     SWINT_KEY,
@@ -28,36 +29,41 @@ from src.heads.constants import (
 )
 from src.heads.mlp_head import MLPHead
 from src.training.constants import (
-    CHECKPOINT_MODEL_FILE_NAME,
+    ACCURACY,
+    CHECKPOINT_FILE_NAME,
     EARLY_STOPPING_DELTA,
     EARLY_STOPPING_PATIENCE,
+    F1_SCORE,
     LOSS,
     OPTIM_FACTOR,
     OPTIM_MIN_LR,
     OPTIM_PATIENCE,
+    PRECISION,
+    RECALL,
 )
 from src.training.metrics import MetricsHandler
 from src.training.train_logger import TrainLogger
 
 
-class Model():
+class Model:
     """
-    Class representing the model for training, validating and testing. It contains all the components of 
-    the project together and provides methods for training, validating and testing the model.
+    Class representing the model for training, validating and testing. It contains all 
+    the components of the project together and provides methods for training,
+    validating and testing the model.
 
     Attributes:
         batch_size (int): The batch size for training the model.
         number_of_epochs (int): The number of epochs for training the model.
         learning_rate (float): The learning rate for training the model.
         data_handler (DataHandler): The data handler for loading the data for the model.
-        data (Dataset | IdentityDocumentImage | None): The dataset for training and validating.
-        or a single identity document image.
+        data (Dataset): The dataset for training and validating.
         extractor (BaseExtractor | None): The feature extractor for the model.
         head (BaseHead | None): The head for the model.
         metrics_handler_train (MetricsHandler): The metrics handler for the training phase.
         metrics_handler_val (MetricsHandler): The metrics handler for the validation phase.
         metrics_handler_test (MetricsHandler): The metrics handler for the test phase.
-        train_logger (TrainLogger): The train logger for saving information about the training process.
+        train_logger (TrainLogger): The train logger for saving information 
+        about the training process.
     """
     def __init__(
             self, 
@@ -79,7 +85,8 @@ class Model():
             batch_size (int): The batch size for training the model.
             number_of_epochs (int): The number of epochs for training the model.
             learning_rate (float): The learning rate for training the model.
-            dropout_percentage (float): The dropout percentage for the head of the model. 
+            dropout_percentage (float): The dropout percentage for the head
+            of the model. 
             Default is 0.2.
 
         Returns:
@@ -89,43 +96,38 @@ class Model():
         self.number_of_epochs: int = number_of_epochs
         self.learning_rate: float = learning_rate
         self.data_handler: DataHandler = DataHandler(Path(data_path))
-        self.data: Dataset | IdentityDocumentImage | None = None
-        self.extractor: BaseExtractor | None = None
-        self.head: BaseHead | None = None
         self.metrics_handler_train: MetricsHandler = MetricsHandler("train")
         self.metrics_handler_val: MetricsHandler = MetricsHandler("val")
         self.metrics_handler_test: MetricsHandler = MetricsHandler("test")
         self.train_logger: TrainLogger = TrainLogger(extractor_name)
 
-
         # Initialize the extractor and head based on the provided extractor name
-        if extractor_name == TRUFOR_KEY:
-            self.extractor = TruForExtractor(device=device)
-            self.head = MLPHead(
-                input_dimension=EXTRACTORS_DIMENSIONS[TRUFOR_KEY],
-                dropout_percentage=dropout_percentage
-            )
-        elif extractor_name == MMFUSION_KEY:
-            self.extractor = MMFusionExtractor(device=device)
-            self.head = MLPHead(
-                input_dimension=EXTRACTORS_DIMENSIONS[MMFUSION_KEY],
-                dropout_percentage=dropout_percentage
-            )
-        elif extractor_name == SWINT_KEY:
-            self.extractor = SwinExtractor(device=device)
-            self.head = MLPHead(
-                input_dimension=EXTRACTORS_DIMENSIONS[SWINT_KEY],
-                dropout_percentage=dropout_percentage
-            )
-        elif extractor_name == IMLVIT_KEY:
-            self.extractor = IMLViTExtractor(device=device)
-            self.head = MLPHead(
-                input_dimension=EXTRACTORS_DIMENSIONS[IMLVIT_KEY],
-                dropout_percentage=dropout_percentage
-            )
-        
+        print(
+            f"[Model] Initializing extractor: {extractor_name} "
+            f"on {'GPU' if device else 'CPU'}"
+        )
+        self.extractor: BaseExtractor = self.create_extractor(extractor_name, device)
+        self.head: BaseHead = MLPHead(
+            input_dimension=EXTRACTORS_DIMENSION[extractor_name],
+            dropout_precentage=dropout_percentage
+        )
+
         # Load the extractor model
+        print("[Model] Loading extractor weights.")
         self.extractor.load_extractor()
+        print("[Model] Extractor ready.")
+
+        # Get the dataset for training and validation and test
+        print(f"[Model] Loading dataset from: {data_path}")
+        self.data_handler.load_dataset()
+        self.data: Dataset = self.data_handler.get_dataset_for_training()
+        print(
+            f"[Model] Dataset loaded with the following number of samples:"
+            f"train: {len(self.data.train_data)}, "
+            f"val: {len(self.data.val_data)}, "
+            f"test: {len(self.data.test_data)}"
+        )
+        
 
         # Save the configuration of the model for the training phase
         self.train_logger.save_configuration(
@@ -140,6 +142,30 @@ class Model():
             }
         )
 
+    def create_extractor(self, extractor_name: str, device: bool) -> BaseExtractor:
+        """
+        Method for creating the extractor based on the provided extractor name.
+
+        Arguments:
+            extractor_name (str): The name of the extractor.
+            device (bool): Flag for using GPU or CPU.
+
+        Raises:
+            ValueError: If an unknown extractor name is provided.
+
+        Returns:
+            BaseExtractor: The created extractor instance.
+        """
+        if extractor_name == TRUFOR_KEY:
+            return TruForExtractor(gpu=device)
+        if extractor_name == MMFUSION_KEY:
+            return MMFusionExtractor(gpu=device)
+        if extractor_name == SWINT_KEY:
+            return SwinExtractor(gpu=device)
+        if extractor_name == IMLVIT_KEY:
+            return IMLViTExtractor(gpu=device)
+        raise ValueError(f"Unknown extractor name was provided: {extractor_name}")
+
     def train(self) -> None:
         """
         Method for handle the training of the model.
@@ -150,11 +176,6 @@ class Model():
         Returns:
             None
         """
-
-        # Get the dataset for training and validation
-        self.data_handler.load_dataset()
-        self.data = self.data_handler.get_dataset_for_training()
-        
         # Move the head to the same device as the extractor
         self.head = self.head.to(self.extractor.device)
 
@@ -168,22 +189,28 @@ class Model():
         loss_function = torch.nn.CrossEntropyLoss()
         # Get the training data from the dataset
         train_data: list[IdentityDocumentImage] = self.data.train_data
-        # Variable for tracking the best validation loss for early stopping
+        print(f"[Train] Starting training for {self.number_of_epochs} epoch(s).")
+        # Variable for tracking the best validation loss for 
+        # early stopping
         best_val_loss: float = float("inf")
-        # Varible for tracking the number of epochs without improvement in validation loss for early stopping
+        # Variable for tracking the number of epochs without improvement in validation loss
+        # for early stopping
         val_loss_not_improved: int = 0
         # Index of the best epoch
         best_epoch_index: int = -1
         # Scheduler for learning rate control
-        scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode='min',
-            factor=OPTIM_FACTOR,
-            patience=OPTIM_PATIENCE,
-            min_lr=OPTIM_MIN_LR,
+        scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau = (
+            torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=OPTIM_FACTOR,
+                patience=OPTIM_PATIENCE,
+                min_lr=OPTIM_MIN_LR,
+            )
         )
 
         for epoch in range(self.number_of_epochs):
+            print(f"[Train] Epoch {epoch + 1}/{self.number_of_epochs} started.")
             # Set the head to training mode
             self.head.train()
             # Loss for the current epoch
@@ -195,8 +222,10 @@ class Model():
             # List of all labels for the current epoch
             epoch_all_labels: list[torch.Tensor] = []
             # Shuffle the training data for the epoch
-            shuffled_train_data: list[IdentityDocumentImage] = self.data_handler.shuffle_epoch_training_data(
-                train_data
+            shuffled_train_data: list[IdentityDocumentImage] = (
+                self.data_handler.shuffle_epoch_training_data(
+                    train_data
+                )
             )
 
             # Iterate over the training data in batches
@@ -216,6 +245,10 @@ class Model():
                 for identity_document in batch_data:
                     embedding: torch.Tensor = self.extractor.extract(identity_document)
                     batch_embeddings.append(embedding)
+                    if identity_document.label is None:
+                        raise ValueError(
+                            "Unsupported internal representation of the identity document."
+                        )
                     batch_labels.append(identity_document.label.value)
 
                 # Collect list of the tensors of the embedings to matrix with batch size
@@ -267,23 +300,40 @@ class Model():
             # Validate the model on the validation set
             self.validate(loss_function)
             # Step of the scheduler for learning rate control based on the validation loss
-            scheduler.step(self.metrics_handler_val.history[-1][LOSS])
+            current_val_loss: float = self.metrics_handler_val.history.history_values[LOSS][-1]
+            scheduler.step(current_val_loss)
 
-            if self.metrics_handler_val.history[-1][LOSS] < best_val_loss - EARLY_STOPPING_DELTA:
-                best_val_loss = self.metrics_handler_val.history[-1][LOSS]
+            train_history_values: dict[str, list[float]] =(
+                self.metrics_handler_train.history.history_values
+            )
+            validation_history_values: dict[str, list[float]] = (
+                self.metrics_handler_val.history.history_values
+            )
+            print(
+                f"[Train] Epoch {epoch + 1}/{self.number_of_epochs} "
+                f"| training loss: {train_history_values[LOSS][-1]:.4f}"
+                f", training  accuracy: {train_history_values[ACCURACY][-1]:.4f}"
+                f" | validation loss: {validation_history_values[LOSS][-1]:.4f}"
+                f", validation accuracy: {validation_history_values[ACCURACY][-1]:.4f}"
+            )
+    
+            if current_val_loss < best_val_loss - EARLY_STOPPING_DELTA:
+                best_val_loss = current_val_loss
                 val_loss_not_improved = 0
                 best_epoch_index = epoch
-                # Save the the model weights
+                # Save the model weights
                 self.train_logger.save_checkpoint(
-                    CHECKPOINT_MODEL_FILE_NAME, self.head
+                    CHECKPOINT_FILE_NAME, self.head
                 )
+                print(f"[Train] New best model saved (validation loss: {best_val_loss:.4f}).")
             else:
                 val_loss_not_improved += 1
 
             if val_loss_not_improved >= EARLY_STOPPING_PATIENCE:
-                print("")
+                print(f"[Train] Early stopping after {epoch + 1} epoch(s).")
                 break
 
+        print(f"[Train] Training finished. Best epoch: {best_epoch_index + 1}.")
         # Save the metrics of the training and validation phases after the training is finished
         self.train_logger.save_metrics(
             train_history=self.metrics_handler_train.history,
@@ -292,28 +342,29 @@ class Model():
 
         # Save the summary of the training process
         self.train_logger.save_summary(
-            best_epoch_index=best_epoch_index + 1,
+            best_epoch=best_epoch_index + 1,
             train_history=self.metrics_handler_train.history,
-            validation_history=self.metrics_handler_val.history,
+            val_history=self.metrics_handler_val.history,
         )
 
         # Save the graphs of the metrics for the training and validation phases
         self.train_logger.save_all_metric_graphs(
             train_history=self.metrics_handler_train.history,
-            validation_history=self.metrics_handler_val.history,
+            val_history=self.metrics_handler_val.history,
         )
 
-    def evaluate_dataset(
+    def evaluate(
         self,
         data: list[IdentityDocumentImage],
         loss_function: torch.nn.CrossEntropyLoss
     ) -> tuple[float, torch.Tensor, torch.Tensor]:
         """
-        Helper method for evaluating the model on a dataset.
+        Method for evaluating the classifier on a dataset.
 
         Arguments:
             data (list[IdentityDocumentImage]): The data to evaluate.
-            loss_function (torch.nn.CrossEntropyLoss): The loss function used for calculating the loss.
+            loss_function (torch.nn.CrossEntropyLoss): The loss function used
+            for calculating the loss.
 
         Returns:
             tuple[float, torch.Tensor, torch.Tensor]: The average loss, all predictions
@@ -345,6 +396,10 @@ class Model():
                 for identity_document in batch_data:
                     embedding_tensor: torch.Tensor = self.extractor.extract(identity_document)
                     embeddings_tensor.append(embedding_tensor)
+                    if identity_document.label is None:
+                        raise ValueError(
+                                "Unsupported internal representation of the identity document."
+                            )
                     labels.append(identity_document.label.value)
 
                 # Collect list of the tensors of the embeddings to matrix with batch size
@@ -393,7 +448,7 @@ class Model():
         self.head.eval()
 
         # Evaluate the model on the validation data
-        validation_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate_dataset(
+        validation_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate(
             self.data.val_data, loss_function
         )
 
@@ -414,14 +469,11 @@ class Model():
         Returns:
             None
         """
-        
-        # Load the dataset if not loaded
-        if self.data is None:
-            self.data_handler.load_dataset()
-            self.data = self.data_handler.get_dataset_for_training()
-
         # Move the head to the same device as the extractor
-        self.head.to(self.extractor.device)
+        self.head = self.head.to(self.extractor.device)
+        # Load the best saved weights into the head
+        print("[Test] Loading checkpoint into classifier head.")
+        self.train_logger.load_checkpoint(CHECKPOINT_FILE_NAME, self.head)
         # Set the head to evaluation mode
         self.head.eval()
 
@@ -429,7 +481,8 @@ class Model():
         loss_function = torch.nn.CrossEntropyLoss()
 
         # Evaluate the model on the test data
-        test_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate_dataset(
+        print("[Test] Evaluating on test set.")
+        test_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate(
             self.data.test_data, loss_function
         )
 
@@ -450,4 +503,15 @@ class Model():
         self.train_logger.save_test_results(
             test_history=self.metrics_handler_test.history,
             confusion_matrix_values=confusion_matrix
+        )
+        test_history_values: dict[str, list[float]] = (
+            self.metrics_handler_test.history.history_values
+        )
+        print(
+            f"[Test] Results"
+            f" | loss: {test_history_values[LOSS][0]:.4f}"
+            f", accuracy: {test_history_values[ACCURACY][0]:.4f}"
+            f", precision: {test_history_values[PRECISION][0]:.4f}"
+            f", recall: {test_history_values[RECALL][0]:.4f}"
+            f", F1-score: {test_history_values[F1_SCORE][0]:.4f}"
         )
