@@ -10,6 +10,11 @@ document images.
 import sys
 from pathlib import Path
 
+# Add the directory with the TruFor code to the system path for importing extractor
+TRUFOR_DIR: str = str(Path(__file__).resolve().parents[2] / "external" / "TruFor" / "TruFor_train_test")
+if TRUFOR_DIR not in sys.path:
+    sys.path.insert(0, TRUFOR_DIR)
+
 import numpy
 import numpy.typing as npt
 import torch
@@ -21,16 +26,11 @@ from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
     DEFAULT_USE_GPU,
-    EXTRACTORS_DIR_STR,
     TRUFOR_CONFIG,
     TRUFOR_NAME,
     TRUFOR_SRC,
 )
 
-# Add the directory with the TruFor code to the system path for importing extractor
-TRUFOR_DIR = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR / TRUFOR_NAME / TRUFOR_SRC
-if str(TRUFOR_DIR) not in sys.path:
-    sys.path.insert(0, str(TRUFOR_DIR))
 
 class TruForExtractor(BaseExtractor):
     """
