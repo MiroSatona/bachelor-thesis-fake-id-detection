@@ -11,7 +11,9 @@ import sys
 from pathlib import Path
 
 # Add the directory with the TruFor code to the system path for importing extractor
-TRUFOR_DIR: str = str(Path(__file__).resolve().parents[2] / "external" / "TruFor" / "TruFor_train_test")
+TRUFOR_DIR: str = str(
+    Path(__file__).resolve().parents[2] / "external" / "TruFor" / "TruFor_train_test"
+)
 if TRUFOR_DIR not in sys.path:
     sys.path.insert(0, TRUFOR_DIR)
 
