@@ -7,6 +7,7 @@ around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features from id
 document images.
 """
 
+import sys
 from pathlib import Path
 
 import numpy
@@ -18,8 +19,18 @@ from external.TruFor.TruFor_train_test.lib.config import config as trufor_config
 from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import EncoderDecoder
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
-from src.extractors.constants import DEFAULT_USE_GPU, TRUFOR_CONFIG, TRUFOR_NAME, TRUFOR_SRC
+from src.extractors.constants import (
+    DEFAULT_USE_GPU,
+    EXTRACTORS_DIR_STR,
+    TRUFOR_CONFIG,
+    TRUFOR_NAME,
+    TRUFOR_SRC,
+)
 
+# Add the directory with the TruFor code to the system path for importing extractor
+TRUFOR_DIR = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR / TRUFOR_NAME / TRUFOR_SRC
+if str(TRUFOR_DIR) not in sys.path:
+    sys.path.insert(0, str(TRUFOR_DIR))
 
 class TruForExtractor(BaseExtractor):
     """

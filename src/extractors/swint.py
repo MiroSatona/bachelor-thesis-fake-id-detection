@@ -8,6 +8,7 @@ from identity document images.
 """
 
 import sys
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -19,13 +20,18 @@ from external.SwinT.models.swin_transformer import SwinTransformer
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
-	DEFAULT_USE_GPU,
-	SWINT_CONFIG,
-	SWINT_DIR_MODELS,
-	SWINT_NAME,
-	SWINT_PRETRAINED_PATH,
+    DEFAULT_USE_GPU,
+    EXTRACTORS_DIR_STR,
+    SWINT_CONFIG,
+    SWINT_DIR_MODELS,
+    SWINT_NAME,
+    SWINT_PRETRAINED_PATH,
 )
 
+# Add the directory with the Swin Transformer code to the system path for importing extractor
+SWINT_DIR = Path(__file__).resolve().parents[2] / EXTRACTORS_DIR_STR / SWINT_NAME
+if str(SWINT_DIR) not in sys.path:
+    sys.path.insert(0, str(SWINT_DIR))
 
 class SwinExtractor(BaseExtractor):
 	"""
