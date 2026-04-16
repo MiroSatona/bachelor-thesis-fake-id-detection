@@ -20,6 +20,24 @@ PYTEST_CACHE_DIR = .pytest_cache
 MYPY_CACHE_DIR = .mypy_cache
 # Directory for the cache of the ruff
 RUFF_CACHE_DIR = .ruff_cache
+# Directory with checkpoint for the application
+CHECKPOINT_DIR = checkpoint
+# Makefile file
+MAKEFILE = Makefile
+# README file
+README = README.md
+# License file
+LICENSE = LICENSE
+# Pyproject file
+PYPROJECT = pyproject.toml
+# Pip executable for the project
+PIP = $(ENV_DIR)/bin/pip
+# Python executable for the project
+PYTHON = $(ENV_DIR)/bin/python3.12
+# Ruff executable for the project
+RUFF = $(ENV_DIR)/bin/ruff
+# Mypy executable for the project
+MYPY = $(ENV_DIR)/bin/mypy
 
 # Build of the project
 build:
@@ -35,28 +53,28 @@ build:
 
 	@echo "Installing project dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .[dev]
+	@"$(PIP)" install -e .[dev]
 
 	@if [ ! -d "$(EXTERNAL_DIR)" ]; then \
 		echo "Downloading extractors."; \
-		"$(ENV_DIR)/bin/python" "$(SCRIPTS_DIR)/download_extractors.py"; \
+		"$(PYTHON)" "$(SCRIPTS_DIR)/download_extractors.py"; \
 	else \
 		echo "Extractors already exist."; \
 	fi
 
 	@if [ -f "$(EXTERNAL_DIR)/TruFor/requirements.txt" ]; then \
 		echo "Installing TruFor dependencies."; \
-		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/TruFor/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/TruFor/requirements.txt"; \
 	fi
 
 	@if [ -f "$(EXTERNAL_DIR)/IML_VIT/requirements.txt" ]; then \
 		echo "Installing IML-ViT dependencies."; \
-		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/IML_VIT/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/IML_VIT/requirements.txt"; \
 	fi
 
 	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
 		echo "Installing MMFusion dependencies."; \
-		"$(ENV_DIR)/bin/pip" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
 	fi
 
 # Build of the application for running the GUI
@@ -66,23 +84,32 @@ build_app:
 	@if [ ! -d "$(ENV_DIR)" ]; then \
 		echo "Creating virtual environment."; \
 		python3.12 -m venv "$(ENV_DIR)"; \
-		"$(ENV_DIR)/bin/pip" install --upgrade pip; \
+		"$(PIP)" install --upgrade pip; \
 	else \
 		echo "Virtual environment already exists."; \
 	fi
 
 	@echo "Installing application dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .
+	@"$(PIP)" install -e .
+	
+	# TODO: CHANGE THE EXTRACTOR DEPEND ON THE RESULT OF THE TRAINING
+	@echo "Setting up extractor for the application."
+	@PYTHONPATH="$(PWD)" "$(PYTHON)" "$(SCRIPTS_DIR)/build_app.py"
+	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
+		echo "Installing MMFusion dependencies."; \
+		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
+	fi
 
-# TODO: Add target model for running the application and run the script for downlaoad the checkpoint of the model	
+	@echo "Running script for running the application."
+	@PYTHONPATH="$(PWD)" "$(PYTHON)" "$(SCRIPTS_DIR)/run_app.py"
 
 # Running all the tests of the project
 test_all:
 	@$(MAKE) build
 
 	@echo "Running all the tests of the project."
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)
 
 # Running the tests for the data processing
 test_data_processing:
@@ -92,38 +119,38 @@ test_data_processing:
 	@if [ ! -d "$(ENV_DIR)" ]; then \
 		echo "Creating virtual environment."; \
 		python3.12 -m venv "$(ENV_DIR)"; \
-		"$(ENV_DIR)/bin/pip" install --upgrade pip; \
+		"$(PIP)" install --upgrade pip; \
 	else \
 		echo "Virtual environment already exists."; \
 	fi
 
 	@echo "Installing project dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .
+	@"$(PIP)" install -e .
 
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/unit
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/data_processing/integrations
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)/data_processing/unit
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)/data_processing/integrations
 
 # Running the tests for the extractors
 test_extractors:
 	@echo "Testing the extractors."
 	@echo "Setting up environment for testing."
 	@$(MAKE) build
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/extractors/
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)/extractors/
 
 # Running the tests for the heads
 test_heads:
 	@echo "Testing the heads."
 	@echo "Setting up environment for testing."
 	@$(MAKE) build
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/heads/
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)/heads/
 
 # Running the tests for the training
 test_training:
 	@echo "Testing the training."
 	@echo "Setting up environment for testing."
 	@$(MAKE) build
-	@"$(ENV_DIR)/bin/python" -m pytest -v $(TESTS_DIR)/training/
+	@"$(PYTHON)" -m pytest -v $(TESTS_DIR)/training/
 
 # Ruff code quality check
 ruff_check:
@@ -133,17 +160,17 @@ ruff_check:
 	@if [ ! -d "$(ENV_DIR)" ]; then \
 		echo "Creating virtual environment."; \
 		python3.12 -m venv "$(ENV_DIR)"; \
-		"$(ENV_DIR)/bin/pip" install --upgrade pip; \
+		"$(PIP)" install --upgrade pip; \
 	else \
 		echo "Virtual environment already exists."; \
 	fi
 
 	@echo "Installing project dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .
+	@"$(PIP)" install -e .
 
 	@echo "Running ruff for code quality check."
-	@"$(ENV_DIR)/bin/ruff" check "$(SRC_DIR)" "$(TESTS_DIR)" "$(SCRIPTS_DIR)"
+	@"$(RUFF)" check "$(SRC_DIR)" "$(TESTS_DIR)" "$(SCRIPTS_DIR)"
 
 # Ruff code quality check with fixing issues
 ruff_fix:
@@ -153,28 +180,28 @@ ruff_fix:
 	@if [ ! -d "$(ENV_DIR)" ]; then \
 		echo "Creating virtual environment."; \
 		python3.12 -m venv "$(ENV_DIR)"; \
-		"$(ENV_DIR)/bin/pip" install --upgrade pip; \
+		"$(PIP)" install --upgrade pip; \
 	else \
 		echo "Virtual environment already exists."; \
 	fi
 
 	@echo "Installing project dependencies."
 	@mkdir -p "$(META_DIR)"
-	@"$(ENV_DIR)/bin/pip" install -e .
+	@"$(PIP)" install -e .
 
 	@echo "Running ruff for fixing issues."
-	@"$(ENV_DIR)/bin/ruff" check --fix "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)"
+	@"$(RUFF)" check --fix "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)"
 
 # Mypy type check
 mypy_check:
 	@$(MAKE) build
 	@echo "Running mypy type check."
-	@"$(ENV_DIR)/bin/mypy" "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)"
+	@"$(MYPY)" "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)"
 
 # Zipping the project for submission
 zip:
 	@echo "Zipping the project for submission."
-	@zip -r submission.zip "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)" Makefile pyproject.toml README.md
+	@zip -r submission.zip "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)" "$(CHECKPOINT_DIR)" "$(MAKEFILE)" "$(PYPROJECT)" "$(README)" "$(LICENSE)"
 
 # Cleaning the project
 clean:
