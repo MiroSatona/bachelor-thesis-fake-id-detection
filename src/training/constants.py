@@ -50,10 +50,10 @@ TEST_CONFUSION_MATRIX_FILE_VALUES_NAME: str = "test_confusion_matrix_values.json
 TEST_CONFUSION_MATRIX_FILE_MATRIX_NAME: str = "test_confusion_matrix.png"
 
 # Constants for early stopping
-EARLY_STOPPING_PATIENCE: int = 6
+EARLY_STOPPING_PATIENCE: int = 5
 EARLY_STOPPING_DELTA: float = 0.001 
 
 # Constants for learning rate optimization
-OPTIM_PATIENCE: int = 3
-OPTIM_FACTOR: float = 0.5
+OPTIM_PATIENCE: int = 2
+OPTIM_FACTOR: float = 0.1
 OPTIM_MIN_LR: float = 1e-6
