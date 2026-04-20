@@ -15,9 +15,9 @@ ATTACK_SUBSET: str = "attack"
 IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 # Percentage of the dataset to be used for training
-TRAIN_PERCENTAGE: float = 0.7
+TRAIN_PERCENTAGE: float = 0.75
 # Percentage of the dataset to be used for validation
-VAL_PERCENTAGE: float = 0.15
+VAL_PERCENTAGE: float = 0.10
 # Percentage of the dataset to be used for testing
 TEST_PERCENTAGE: float = 0.15
 
