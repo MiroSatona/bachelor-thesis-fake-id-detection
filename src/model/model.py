@@ -2,8 +2,8 @@
 Author: Martin Zůbek
 Date: 2026-04-05
 File: model.py
-Description: This file contains the implementation of the Model class which concatates all the 
-components of the project together for creating a represenation of the model for training,
+Description: This file contains the implementation of the Model class which concatenates all the 
+components of the project together for creating a representation of the model for training,
 validating and testing.
 """
 from pathlib import Path
@@ -166,9 +166,39 @@ class Model:
             return IMLViTExtractor(gpu=device)
         raise ValueError(f"Unknown extractor name was provided: {extractor_name}")
 
+    def extract_embeddings(
+            self,
+            data: list[IdentityDocumentImage],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Method for extracting embeddings and labels from identity document images.
+        This method is used for the training, validation, and test phases, and computes 
+        the embeddings only once for optimization.
+
+        Arguments:
+            data (list[IdentityDocumentImage]): The list of identity document images for which
+            to extract the embeddings.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: The extracted embeddings and the labels.
+        """
+
+        # List for storing the extracted embeddings
+        embeddings: list[torch.Tensor] = []
+        # List for storing the labels
+        labels: list[int] = []
+        for identity_document in data:
+            # Extract the embedding for the current identity document image
+            embedding: torch.Tensor = self.extractor.extract(identity_document)
+            # Append the embedding and move to the CPU
+            embeddings.append(embedding.cpu())
+            # Append the label of the current identity document
+            labels.append(identity_document.label.value)
+        return torch.stack(embeddings), torch.tensor(labels, dtype=torch.long)
+
     def train(self) -> None:
         """
-        Method for handle the training of the model.
+        Method for handling the training of the model.
 
         Arguments:
             None
@@ -188,14 +218,28 @@ class Model:
         # Set up the loss function
         loss_function = torch.nn.CrossEntropyLoss()
         # Get the training data from the dataset
-        train_data: list[IdentityDocumentImage] = self.data.train_data
+        training_data: list[IdentityDocumentImage] = self.data.train_data
+        # Extract the embeddings and store labels for the training data 
+        training_embeddings: torch.Tensor
+        training_labels: torch.Tensor
+        training_embeddings, training_labels = self.extract_embeddings(
+            training_data
+        )
+        # Extract the embeddings and store labels for the validation data
+        validation_data: list[IdentityDocumentImage] = self.data.val_data
+        validation_embeddings: torch.Tensor
+        validation_labels: torch.Tensor
+        validation_embeddings, validation_labels = self.extract_embeddings(
+            validation_data
+        )
+        # Create a tensor of indexes for the training data
+        training_indexes: torch.Tensor = torch.arange(len(training_embeddings))
         print(f"[Train] Starting training for {self.number_of_epochs} epoch(s).")
-        # Variable for tracking the best validation loss for 
-        # early stopping
-        best_val_loss: float = float("inf")
+        # Variable for tracking the best validation loss for early stopping
+        best_validation_loss: float = float("inf")
         # Variable for tracking the number of epochs without improvement in validation loss
         # for early stopping
-        val_loss_not_improved: int = 0
+        validation_loss_not_improved: int = 0
         # Index of the best epoch
         best_epoch_index: int = -1
         # Scheduler for learning rate control
@@ -221,47 +265,25 @@ class Model:
             epoch_all_predictions: list[torch.Tensor] = []
             # List of all labels for the current epoch
             epoch_all_labels: list[torch.Tensor] = []
-            # Shuffle the training data for the epoch
-            shuffled_train_data: list[IdentityDocumentImage] = (
-                self.data_handler.shuffle_epoch_training_data(
-                    train_data
-                )
-            )
+            # Shuffle indexes for the training data
+            shuffled_training_indexes: torch.Tensor = training_indexes[
+                torch.randperm(len(training_indexes))
+            ]
 
             # Iterate over the training data in batches
-            for batch_iterator in range(0, len(shuffled_train_data), self.batch_size):
-                # Get the current batch of data
-                batch_data = shuffled_train_data[batch_iterator:batch_iterator + self.batch_size]
-
-                # List of embeddings for the current batch
-                batch_embeddings: list[torch.Tensor] = []
-                # List of labels for the current batch 
-                # -> 0 is real identity document, 1 is fake identity document
-                # REF: src/data_processing/enums.py -> Label Enum class
-                batch_labels: list[int] = []
-
-                
-                # Extract embeddings for the current batch and collect labels
-                for identity_document in batch_data:
-                    embedding: torch.Tensor = self.extractor.extract(identity_document)
-                    batch_embeddings.append(embedding)
-                    if identity_document.label is None:
-                        raise ValueError(
-                            "Unsupported internal representation of the identity document."
-                        )
-                    batch_labels.append(identity_document.label.value)
-
-                # Collect list of the tensors of the embedings to matrix with batch size
-                # and move to the same device as the extractor and head
-                batch_embeddings_tensor: torch.Tensor = torch.stack(batch_embeddings).to(
+            for batch_iterator in range(0, len(shuffled_training_indexes), self.batch_size):
+                # Get the indexes for the current batch
+                batch_indexes: torch.Tensor = shuffled_training_indexes[
+                    batch_iterator:batch_iterator + self.batch_size
+                ]
+                # Get embeddings tensor of the batch and move to the device
+                batch_embeddings_tensor: torch.Tensor = training_embeddings[batch_indexes].to(
                     self.extractor.device
                 )
-                # Convert labels to tensor and move to the extractors and heads device
-                batch_labels_tensor: torch.Tensor = torch.tensor(
-                    batch_labels, dtype=torch.long, device=self.extractor.device
-                )  
-                
-                
+                # Get labels tensor of the batch and move to the device
+                batch_labels_tensor: torch.Tensor = training_labels[batch_indexes].to(
+                    self.extractor.device
+                )
                 # Zero the gradients because gradients are accumulated by default in PyTorch
                 optimizer.zero_grad()
                 # Forward pass through the head to get predictions
@@ -277,14 +299,14 @@ class Model:
                 # Update the epoch loss
                 epoch_loss += loss.item() * batch_embeddings_tensor.size(0)
                 # Update the total number of identity documents processed
-                total_identity_documents += len(batch_data)
+                total_identity_documents += batch_embeddings_tensor.size(0)
                 # Append the predictions of the current batch
                 epoch_all_predictions.append(predictions.detach().cpu())
                 # Append the labels of the current batch
                 epoch_all_labels.append(batch_labels_tensor.detach().cpu())
 
             # Calculate the training loss for the current epoch
-            train_loss: float = epoch_loss / total_identity_documents
+            training_loss: float = epoch_loss / total_identity_documents
 
             # Concatenate all batch predictions and labels into a single tensor
             epoch_predictions_tensor: torch.Tensor = torch.cat(epoch_all_predictions)
@@ -294,16 +316,16 @@ class Model:
             self.metrics_handler_train.add_epoch_metrics(
                 epoch_predictions=epoch_predictions_tensor,
                 epoch_labels=epoch_labels_tensor,
-                loss=train_loss
+                loss=training_loss
             )
 
             # Validate the model on the validation set
-            self.validate(loss_function)
+            self.validate(validation_embeddings, validation_labels, loss_function)
             # Step of the scheduler for learning rate control based on the validation loss
-            current_val_loss: float = self.metrics_handler_val.history.history_values[LOSS][-1]
-            scheduler.step(current_val_loss)
+            current_validation_loss: float = self.metrics_handler_val.history.history_values[LOSS][-1]
+            scheduler.step(current_validation_loss)
 
-            train_history_values: dict[str, list[float]] =(
+            training_history_values: dict[str, list[float]] =(
                 self.metrics_handler_train.history.history_values
             )
             validation_history_values: dict[str, list[float]] = (
@@ -311,25 +333,26 @@ class Model:
             )
             print(
                 f"[Train] Epoch {epoch + 1}/{self.number_of_epochs} "
-                f"| training loss: {train_history_values[LOSS][-1]:.4f}"
-                f", training  accuracy: {train_history_values[ACCURACY][-1]:.4f}"
+                f"| training loss: {training_history_values[LOSS][-1]:.4f}"
+                f", training  accuracy: {training_history_values[ACCURACY][-1]:.4f}"
                 f" | validation loss: {validation_history_values[LOSS][-1]:.4f}"
                 f", validation accuracy: {validation_history_values[ACCURACY][-1]:.4f}"
             )
-    
-            if current_val_loss < best_val_loss - EARLY_STOPPING_DELTA:
-                best_val_loss = current_val_loss
-                val_loss_not_improved = 0
+
+            # Check for improvement in validation loss for early stopping and save the best model weights
+            if current_validation_loss < best_validation_loss - EARLY_STOPPING_DELTA:
+                best_validation_loss = current_validation_loss
+                validation_loss_not_improved = 0
                 best_epoch_index = epoch
                 # Save the model weights
                 self.train_logger.save_checkpoint(
                     CHECKPOINT_FILE_NAME, self.head
                 )
-                print(f"[Train] New best model saved (validation loss: {best_val_loss:.4f}).")
+                print(f"[Train] New best model saved (validation loss: {best_validation_loss:.4f}).")
             else:
-                val_loss_not_improved += 1
+                validation_loss_not_improved += 1
 
-            if val_loss_not_improved >= EARLY_STOPPING_PATIENCE:
+            if validation_loss_not_improved >= EARLY_STOPPING_PATIENCE:
                 print(f"[Train] Early stopping after {epoch + 1} epoch(s).")
                 break
 
@@ -355,14 +378,16 @@ class Model:
 
     def evaluate(
         self,
-        data: list[IdentityDocumentImage],
-        loss_function: torch.nn.CrossEntropyLoss
+        embeddings_tensor: torch.Tensor,
+        labels_tensor: torch.Tensor,
+        loss_function: torch.nn.CrossEntropyLoss,
     ) -> tuple[float, torch.Tensor, torch.Tensor]:
         """
-        Method for evaluating the classifier on a dataset.
+        Method for evaluating the classifier on pre-computed embeddings.
 
         Arguments:
-            data (list[IdentityDocumentImage]): The data to evaluate.
+            embeddings_tensor (torch.Tensor): Tensor of embedding extracted from the data on CPU.
+            labels_tensor (torch.Tensor): Tensor of labels for the data on CPU.
             loss_function (torch.nn.CrossEntropyLoss): The loss function used
             for calculating the loss.
 
@@ -381,36 +406,15 @@ class Model:
 
         with torch.no_grad():
             # Iterate over the data in batches
-            for batch_iterator in range(0, len(data), self.batch_size):
-                # Get the current batch of data
-                batch_data: list[IdentityDocumentImage] = data[
+            for batch_iterator in range(0, len(embeddings_tensor), self.batch_size):
+                # Get embeddings tensor of the batch and move to the device
+                batch_embeddings_tensor: torch.Tensor = embeddings_tensor[
                     batch_iterator:batch_iterator + self.batch_size
-                ]
-
-                # List of tensors of the embeddings for the current batch
-                embeddings_tensor: list[torch.Tensor] = []
-                # List of the labels for the current batch
-                labels: list[int] = []
-
-                # Extract embeddings for the current batch and collect labels
-                for identity_document in batch_data:
-                    embedding_tensor: torch.Tensor = self.extractor.extract(identity_document)
-                    embeddings_tensor.append(embedding_tensor)
-                    if identity_document.label is None:
-                        raise ValueError(
-                                "Unsupported internal representation of the identity document."
-                            )
-                    labels.append(identity_document.label.value)
-
-                # Collect list of the tensors of the embeddings to matrix with batch size
-                # and move to the same device as the extractor and head
-                batch_embeddings_tensor: torch.Tensor = torch.stack(embeddings_tensor).to(
-                    self.extractor.device
-                )
-                # Convert labels to tensor and move to the extractors and heads device
-                batch_labels_tensor: torch.Tensor = torch.tensor(
-                    labels, dtype=torch.long, device=self.extractor.device
-                )
+                ].to(self.extractor.device)
+                # Get labels tensor of the batch and move to the device
+                batch_labels_tensor: torch.Tensor = labels_tensor[
+                    batch_iterator:batch_iterator + self.batch_size
+                ].to(self.extractor.device)
 
                 # Forward pass through the head to get predictions
                 predictions: torch.Tensor = self.head(batch_embeddings_tensor)
@@ -420,24 +424,33 @@ class Model:
                 # Update the total loss
                 total_loss += loss.item() * batch_embeddings_tensor.size(0)
                 # Update the total number of identity documents processed
-                total_identity_documents += len(batch_data)
+                total_identity_documents += batch_embeddings_tensor.size(0)
                 # Append the predictions of the current batch
                 all_predictions.append(predictions.detach().cpu())
                 # Append the labels of the current batch
                 all_labels.append(batch_labels_tensor.detach().cpu())
 
-        # Return the average loss and concatenated predictions and labels
+        # Return the loss and concatenated predictions and labels
         return (
             total_loss / total_identity_documents,
             torch.cat(all_predictions, dim=0),
             torch.cat(all_labels, dim=0)
         )
 
-    def validate(self, loss_function: torch.nn.CrossEntropyLoss) -> None:
+    def validate(
+            self,
+            validation_embeddings_tensor: torch.Tensor,
+            validation_labels_tensor: torch.Tensor,
+            loss_function: torch.nn.CrossEntropyLoss,
+    ) -> None:
         """
-        Method for handle the validation of the model.
+        Method for handling the validation of the model.
 
         Arguments:
+            validation_embeddings_tensor (torch.Tensor): Tensor of embedding 
+            extracted from the validation data on CPU.
+            validation_labels_tensor (torch.Tensor): Tensor of labels for the validation 
+            data on CPU.
             loss_function (torch.nn.CrossEntropyLoss): The loss function 
             used for calculating the validation loss.
 
@@ -448,11 +461,14 @@ class Model:
         self.head.eval()
 
         # Evaluate the model on the validation data
+        validation_loss: float
+        epoch_predictions_tensor: torch.Tensor
+        epoch_labels_tensor: torch.Tensor
         validation_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate(
-            self.data.val_data, loss_function
+            validation_embeddings_tensor, validation_labels_tensor, loss_function
         )
 
-        # Save the metrics for the current epoch which is validated
+        # Save the metrics for the current validation epoch
         self.metrics_handler_val.add_epoch_metrics(
             epoch_predictions=epoch_predictions_tensor,
             epoch_labels=epoch_labels_tensor,
@@ -461,7 +477,7 @@ class Model:
 
     def test(self) -> None:
         """
-        Method for handle the testing of the model.
+        Method for handling the testing of the model.
 
         Arguments:
             None
@@ -476,14 +492,17 @@ class Model:
         self.train_logger.load_checkpoint(CHECKPOINT_FILE_NAME, self.head)
         # Set the head to evaluation mode
         self.head.eval()
-
         # Set up the loss function
         loss_function = torch.nn.CrossEntropyLoss()
 
-        # Evaluate the model on the test data
         print("[Test] Evaluating on test set.")
+        # Extract the embeddings and store labels for the test data
+        test_embeddings, test_labels = self.extract_embeddings(
+            self.data.test_data
+        )
+        # Evaluate the model on the test data
         test_loss, epoch_predictions_tensor, epoch_labels_tensor = self.evaluate(
-            self.data.test_data, loss_function
+            test_embeddings, test_labels, loss_function
         )
 
         # Calculate and store metrics for the test phase
@@ -507,6 +526,7 @@ class Model:
         test_history_values: dict[str, list[float]] = (
             self.metrics_handler_test.history.history_values
         )
+
         print(
             f"[Test] Results"
             f" | loss: {test_history_values[LOSS][0]:.4f}"
