@@ -193,6 +193,11 @@ class Model:
             # Append the embedding and move to the CPU
             embeddings.append(embedding.cpu())
             # Append the label of the current identity document
+            if identity_document.label is None:
+                raise ValueError(
+                    f"Identity document image with path: {identity_document.path} "
+                    f"has no label."
+                )
             labels.append(identity_document.label.value)
         return torch.stack(embeddings), torch.tensor(labels, dtype=torch.long)
 
@@ -232,6 +237,17 @@ class Model:
         validation_embeddings, validation_labels = self.extract_embeddings(
             validation_data
         )
+
+
+        if self.extractor.extractor_model is None:
+            raise RuntimeError("Extractor model is not loaded.")
+        # Move the extractor_model of the extractor to CPU
+        self.extractor.extractor_model.cpu()
+        # Delete the extractor_model from the extractor to free up GPU memory
+        del self.extractor.extractor_model
+        self.extractor.extractor_model = None
+        torch.cuda.empty_cache()
+
         # Create a tensor of indexes for the training data
         training_indexes: torch.Tensor = torch.arange(len(training_embeddings))
         print(f"[Train] Starting training for {self.number_of_epochs} epoch(s).")
@@ -322,7 +338,9 @@ class Model:
             # Validate the model on the validation set
             self.validate(validation_embeddings, validation_labels, loss_function)
             # Step of the scheduler for learning rate control based on the validation loss
-            current_validation_loss: float = self.metrics_handler_val.history.history_values[LOSS][-1]
+            current_validation_loss: float = (
+                self.metrics_handler_val.history.history_values[LOSS][-1]
+            )
             scheduler.step(current_validation_loss)
 
             training_history_values: dict[str, list[float]] =(
@@ -339,7 +357,8 @@ class Model:
                 f", validation accuracy: {validation_history_values[ACCURACY][-1]:.4f}"
             )
 
-            # Check for improvement in validation loss for early stopping and save the best model weights
+            # Check for improvement in validation loss for early stopping
+            # and save the best model weights
             if current_validation_loss < best_validation_loss - EARLY_STOPPING_DELTA:
                 best_validation_loss = current_validation_loss
                 validation_loss_not_improved = 0
@@ -348,7 +367,10 @@ class Model:
                 self.train_logger.save_checkpoint(
                     CHECKPOINT_FILE_NAME, self.head
                 )
-                print(f"[Train] New best model saved (validation loss: {best_validation_loss:.4f}).")
+                print(
+                    f"[Train] New best model saved "
+                    f"(validation loss: {best_validation_loss:.4f})."
+                )
             else:
                 validation_loss_not_improved += 1
 
