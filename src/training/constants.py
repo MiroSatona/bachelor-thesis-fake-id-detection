@@ -31,7 +31,7 @@ VALIDATION_TITLE: str = "validation"
 EXPERIMENTS_DIR: str = "experiments"
 # Path to the directory where all experiments are stored
 EXPERIMENTS_PATH: Path = (
-    Path(__file__).parent.parent / EXPERIMENTS_DIR
+    Path(__file__).parent.parent.parent / EXPERIMENTS_DIR
 )
 # Names for subdirectories and files within each experiment
 GRAPHS_DIR: str = "graphs"
