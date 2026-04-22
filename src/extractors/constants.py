@@ -35,13 +35,33 @@ TRUFOR_CONFIG: Path = (
 	/ "config"
 	/ "trufor_ph3.yaml"
 )
+# Path to the pretrained NoisePrint++ weights of the TruFor
+TRUFOR_NP_WEIGHTS: Path = (
+	Path(__file__).resolve().parents[2]
+	/ EXTRACTORS_DIR_STR
+	/ TRUFOR_NAME
+	/ TRUFOR_SRC
+	/ "pretrained_models"
+	/ "noiseprint++"
+	/ "noiseprint++.th"
+)
+# Path to the pretrained backbone weights of the TruFor
+TRUFOR_BACKBONE_WEIGHTS: Path = (
+	Path(__file__).resolve().parents[2]
+	/ EXTRACTORS_DIR_STR
+	/ TRUFOR_NAME
+	/ TRUFOR_SRC
+	/ "pretrained_models"
+	/ "segformers"
+	/ "mit_b2.pth"
+)
 
 ###################### IML-Vit specific constants #######################
 # Name of the directory with the code for IML-ViT extractor
 IML_VIT_NAME: str = "IML_VIT"
 # Input size for the IML-ViT model
 IML_VIT_INPUT_SIZE: int = 1024
-# Path to the  trained IML-ViT checkpoint
+# Path to the trained IML-ViT checkpoint
 IML_VIT_CHECKPOINT: Path = (
 	Path(__file__).resolve().parents[2]
 	/ EXTRACTORS_DIR_STR
