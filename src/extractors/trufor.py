@@ -93,6 +93,24 @@ class TruForExtractor(BaseExtractor):
         trufor_config.defrost()
         # Load the configuration from the file
         trufor_config.merge_from_file(str(TRUFOR_CONFIG))
+
+        # Set the paths of the pretrained wieghts to the configuration
+        trufor_config.MODEL.PRETRAINED = str(
+            self.root_dir /
+            "TruFor_train_test" /
+            "pretrained_models" /
+            "segformers" /
+            "mit_b2.pth"
+        )
+
+        trufor_config.MODEL.EXTRA.NP_WEIGHTS = str(
+            self.root_dir /
+            "TruFor_train_test" /
+            "pretrained_models" /
+            "noiseprint++" /
+            "noiseprint++.th"
+        )
+
         # Freeze the configuration
         trufor_config.freeze()
 
