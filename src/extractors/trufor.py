@@ -27,9 +27,12 @@ from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import Enc
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
+    CPU,
     DEFAULT_USE_GPU,
+    TRUFOR_BACKBONE_WEIGHTS,
     TRUFOR_CONFIG,
     TRUFOR_NAME,
+    TRUFOR_NP_WEIGHTS,
     TRUFOR_SRC,
 )
 
@@ -70,7 +73,8 @@ class TruForExtractor(BaseExtractor):
 
         Raise:
             RuntimeError: If the root directory, source directory, or configuration file 
-            of the TruFor does not exist.
+            of the TruFor does not exist, or if the pretrained weights for the NoisePrint++
+            or the backbone of the TruFor cannot be found.
 
         Returns:
             None
@@ -88,34 +92,39 @@ class TruForExtractor(BaseExtractor):
         # Check if the configuration file of the TruFor exists
         if not TRUFOR_CONFIG.exists():
             raise RuntimeError(f"Cannot find TruFor configuration file in {TRUFOR_CONFIG}.")
+        # Check if the NoisePrint++ weights file exists
+        if not TRUFOR_NP_WEIGHTS.exists():
+            raise RuntimeError(
+                f"Cannot find TruFor NoisePrint++ weights in {TRUFOR_NP_WEIGHTS}."
+            )
+        # Check if the backbone weights file exists
+        if not TRUFOR_BACKBONE_WEIGHTS.exists():
+            raise RuntimeError(
+                f"Cannot find TruFor backbone weights in {TRUFOR_BACKBONE_WEIGHTS}."
+            )
         
         # Unfreeze the configuration
         trufor_config.defrost()
         # Load the configuration from the file
         trufor_config.merge_from_file(str(TRUFOR_CONFIG))
-
-        # Set the paths of the pretrained wieghts to the configuration
-        trufor_config.MODEL.PRETRAINED = str(
-            self.root_dir /
-            "TruFor_train_test" /
-            "pretrained_models" /
-            "segformers" /
-            "mit_b2.pth"
-        )
-
-        trufor_config.MODEL.EXTRA.NP_WEIGHTS = str(
-            self.root_dir /
-            "TruFor_train_test" /
-            "pretrained_models" /
-            "noiseprint++" /
-            "noiseprint++.th"
-        )
-
+    
         # Freeze the configuration
         trufor_config.freeze()
 
         # Get the model from the TruFor repository
         self.extractor_model = EncoderDecoder(cfg=trufor_config)
+        trufor: EncoderDecoder = self.extractor_model
+
+        # Load the noiseprint weights 
+        noiseprint_weights: dict[str, torch.Tensor] = torch.load(
+            str(TRUFOR_NP_WEIGHTS), map_location=torch.device(CPU)
+        )["network"]
+
+        # Load the pretrained weights for the NoisePrint++ of the TruFor
+        trufor.dncnn.load_state_dict(noiseprint_weights)
+        # Load the pretrained weights for the backbone of the TruFor
+        trufor.backbone.init_weights(pretrained=str(TRUFOR_BACKBONE_WEIGHTS))
+
         # Move the model to the device
         self.extractor_model.to(self.device)
         # Set the model to evaluation mode
