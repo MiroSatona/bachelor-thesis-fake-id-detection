@@ -73,6 +73,8 @@ IML_VIT_CHECKPOINT: Path = (
 #################### MMFusion specific constants ######################
 # Name of the directory with the code for MMFusion extractor
 MMFUSION_NAME: str = "MMFusion"
+# Input size for the MMFusion model
+MMFUSION_INPUT_SIZE: int = 2048
 # Name of the yaml config file for MMFusion
 MMFUSION_CONFIG: Path = (
     Path(__file__).resolve().parents[2]
