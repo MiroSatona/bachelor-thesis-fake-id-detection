@@ -8,6 +8,7 @@ from identity document images. The model combines four input modalities:
 RGB, Noiseprint++, Bayar convolution and SRM filter to detect image manipulation anomalies.
 """
 
+import gc
 import sys
 from pathlib import Path
 
@@ -34,6 +35,7 @@ from src.extractors.constants import (
     IMAGENET_STD,
     MMFUSION_CHECKPOINT,
     MMFUSION_CONFIG,
+    MMFUSION_INPUT_SIZE,
     MMFUSION_NAME,
     MMFUSION_NP_WEIGHTS,
 )
@@ -168,8 +170,28 @@ class MMFusionExtractor(BaseExtractor):
             Image.open(identity_document.path).convert("RGB")
         )
 
+        # Crop the image to the size for the MMFusion model
+        # REF: external/MMFusion/data/datasets.py
+        #      (App must be builded for get code which is referenced)
+        identity_document_image_width: int
+        identity_document_image_height: int
+        identity_document_image_width, identity_document_image_height = identity_document_image.size
+        if max(identity_document_image_width, identity_document_image_height) > MMFUSION_INPUT_SIZE:
+            scale: float = (
+                MMFUSION_INPUT_SIZE / max(
+                    identity_document_image_width, identity_document_image_height
+                )
+            )
+            new_identity_document_image_width: int = int(identity_document_image_width * scale)
+            new_identity_document_image_height: int = int(identity_document_image_height * scale)
+            identity_document_image = identity_document_image.resize(
+                (new_identity_document_image_width, new_identity_document_image_height),
+                Image.Resampling.LANCZOS
+            )
+
         # Normalize the pixel values by deviding by 256.0 to get values in the range [0, 1]
         # REF: external/MMFusion/data/datasets.py
+        #     (App must be builded for get code which is referenced)
         image_array: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
@@ -219,21 +241,23 @@ class MMFusionExtractor(BaseExtractor):
         image_tensor: torch.Tensor = self.preprocess_identity_document(identity_document)
 
         with torch.no_grad():
-            
+
             # Extract the modalities features (Noiseprint++, Bayar convolution and SRM filter)
             # REF: external/MMFusion/models/modal_extract.py 
             #     (App must be builded for get code which is referenced)
             modals: list[torch.Tensor] = modal_extractor(image_tensor)
 
             # Normalize the RGB image tensor using the ImageNet mean and standard deviation
-            image_tensor_noralized: torch.Tensor = torchvision.transforms.functional.normalize(
-                image_tensor, 
-                mean=IMAGENET_MEAN, 
+            image_tensor_normalized: torch.Tensor = torchvision.transforms.functional.normalize(
+                image_tensor,
+                mean=IMAGENET_MEAN,
                 std=IMAGENET_STD
             )
+            del image_tensor
 
             # Concatenate the RGB image tensor for backbone input
-            concatenated_input : list[torch.Tensor] = [image_tensor_noralized] + modals
+            concatenated_input: list[torch.Tensor] = [image_tensor_normalized] + modals
+            del image_tensor_normalized, modals
 
             # Will be returned four outputs from four stages of the backbone
             # stages_output[0]: (1,  64, H/4,  W/4)
@@ -241,15 +265,21 @@ class MMFusionExtractor(BaseExtractor):
             # stages_output[2]: (1, 320, H/16, W/16)
             # stages_output[3]: (1, 512, H/32, W/32)
             stages_output: list[torch.Tensor] = mmfusion.backbone(concatenated_input)
-            # Get the output from the last stage of the backbone 
+            del concatenated_input
+
+            # Get the output from the last stage and free the earlier stages immediately
             last_stage_output: torch.Tensor = stages_output[-1]
+            del stages_output
 
             # Global average pooling to get the embedding vector -> 512
             embedding_vector: torch.Tensor = (
-            torch.mean(last_stage_output, dim=[2, 3])
-            .squeeze(0)
+                torch.mean(last_stage_output, dim=[2, 3])
+                .squeeze(0)
+                .detach()
+                .clone()
             )
+            del last_stage_output
 
-            return embedding_vector
+        gc.collect()
 
-
+        return embedding_vector
