@@ -4,6 +4,9 @@
 
 # Python cache
 __pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
 *.py[cod]
 *.pyo
 *.pyd
@@ -16,11 +19,7 @@ __pycache__/
 
 # Build of the project
 external/
-id-card-forgery-detection.egg-info/
-
-# Testing folder
-tmp_test/
+meta_data/
 
 # Submission zip file
 submission.zip
-
