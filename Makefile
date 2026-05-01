@@ -6,6 +6,14 @@
 SRC_DIR = src
 # Directory with the code of the extractors
 EXTERNAL_DIR = external
+# Directory for the external code of TruFor
+TRUEFOR_DIR = $(EXTERNAL_DIR)/TruFor
+# Directory for the external code of IML-ViT
+IML_VIT_DIR = $(EXTERNAL_DIR)/IML_VIT
+# Directory for the external code of MMFusion
+MMFUSION_DIR = $(EXTERNAL_DIR)/MMFusion
+# Directory for the external code of SwinT
+SWIN_DIR = $(EXTERNAL_DIR)/SwinT
 # Directory for the scripts for setup of the project for training and evaluation and for downloading the extractors
 SCRIPTS_DIR = scripts
 # Directory of the environment of the project
@@ -62,19 +70,19 @@ build:
 		echo "Extractors already exist."; \
 	fi
 
-	@if [ -f "$(EXTERNAL_DIR)/TruFor/requirements.txt" ]; then \
+	@if [ -f "$(TRUEFOR_DIR)/requirements.txt" ]; then \
 		echo "Installing TruFor dependencies."; \
-		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/TruFor/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(TRUEFOR_DIR)/requirements.txt"; \
 	fi
 
-	@if [ -f "$(EXTERNAL_DIR)/IML_VIT/requirements.txt" ]; then \
+	@if [ -f "$(IML_VIT_DIR)/requirements.txt" ]; then \
 		echo "Installing IML-ViT dependencies."; \
-		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/IML_VIT/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(IML_VIT_DIR)/requirements.txt"; \
 	fi
 
-	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
+	@if [ -f "$(MMFUSION_DIR)/requirements.txt" ]; then \
 		echo "Installing MMFusion dependencies."; \
-		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(MMFUSION_DIR)/requirements.txt"; \
 	fi
 
 # Build of the application for running the GUI
@@ -93,15 +101,19 @@ build_app:
 	@mkdir -p "$(META_DIR)"
 	@"$(PIP)" install -e .
 	
-	# TODO: CHANGE THE EXTRACTOR DEPEND ON THE RESULT OF THE TRAINING
+	
 	@echo "Setting up extractor for the application."
 	@PYTHONPATH="$(PWD)" "$(PYTHON)" "$(SCRIPTS_DIR)/build_app.py"
-	@if [ -f "$(EXTERNAL_DIR)/MMFusion/requirements.txt" ]; then \
+	@if [ -f "$(MMFUSION_DIR)/requirements.txt" ]; then \
 		echo "Installing MMFusion dependencies."; \
-		"$(PIP)" install --no-cache-dir -r "$(EXTERNAL_DIR)/MMFusion/requirements.txt"; \
+		"$(PIP)" install --no-cache-dir -r "$(MMFUSION_DIR)/requirements.txt"; \
 	fi
 
-	@echo "Running script for running the application."
+	@echo "Build complete. Run make run_app to start the application."
+
+# Run the application
+run_app:
+	@echo "Running the application."
 	@PYTHONPATH="$(PWD)" "$(PYTHON)" "$(SCRIPTS_DIR)/run_app.py"
 
 # Running all the tests of the project
