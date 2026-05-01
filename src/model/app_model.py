@@ -7,13 +7,14 @@ for classifying a single identity document for the application.
 """
 from pathlib import Path
 
+import numpy
+import numpy.typing as npt
 import torch
 
 from src.data_processing.data_loader import DataLoader
 from src.data_processing.enums import Label
 from src.data_processing.identity_document import IdentityDocumentImage
-from src.extractors.base_extractor import BaseExtractor
-from src.extractors.mmfusion import MMFusionExtractor
+from src.extractors.mmfusion_app import MMFusionExtractorApp
 from src.heads.base_head import BaseHead
 from src.heads.constants import (
     DROPOUT_PRECENTAGE,
@@ -46,8 +47,9 @@ class AppModel:
             None
         """
         self.loader: DataLoader | None = None
-        # Initialize and load the extractor
-        self.extractor: BaseExtractor = MMFusionExtractor(gpu=False)
+        # Initialize and load the extractor for the application
+        gpu:bool = torch.cuda.is_available()
+        self.extractor: MMFusionExtractorApp = MMFusionExtractorApp(gpu=gpu)
         self.extractor.load_extractor()
 
         # Initialize the head
@@ -63,7 +65,7 @@ class AppModel:
         self.head.to(self.extractor.device)
         self.head.eval()
 
-    def classify(self, data_path: Path) -> bool:
+    def classify(self, data_path: Path) -> tuple[bool, npt.NDArray[numpy.float32]]:
         """
         Method to classify a single identity document for the application.
         
@@ -74,7 +76,9 @@ class AppModel:
             RuntimeError: If the loader cannot be created.
         
         Returns:
-            bool: True if the identity document is classified as fraudulent, otherwise False.
+            tuple:
+                - bool: True if the identity document is classified as fraudulent, otherwise False.
+                - npt.NDArray[numpy.float32]: The fraud map as a numpy array of type float32.
         """
         # Create a loader with the provided data path
         self.load_new_identity_document(data_path)
@@ -85,16 +89,16 @@ class AppModel:
             raise RuntimeError("Cannot create the loader for loading the identity document image.")
                     
         with torch.no_grad():
-            # Extract the embedding from the identity document
-            embedding: torch.Tensor = self.extractor.extract(identity_document)
+            # Extract the embedding from the identity document and get the fraud map
+            embedding, fraud_map = self.extractor.app_extract(identity_document)
             # Classify the embedding by the head
             predictions: torch.Tensor = self.head(embedding.unsqueeze(0))
             # Get the predicted class -> 0 for real identity document, 1 for fake
             predicted_class: int = int(
                 torch.argmax(predictions, dim=1).item()
             )
-            # Return True if the predicted class is fraudulent identity document, otherwise False
-            return predicted_class == Label.FAKE.value
+            # Return classification result and fraud map
+            return predicted_class == Label.FAKE.value, fraud_map
 
     def load_new_identity_document(self, data_path: Path) -> None:
         """
