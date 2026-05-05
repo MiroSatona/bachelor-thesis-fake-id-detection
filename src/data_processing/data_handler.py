@@ -95,20 +95,3 @@ class DataHandler:
             )
 
         return self.dataset
-    
-    def shuffle_epoch_training_data(
-            self, 
-            training_data: list[IdentityDocumentImage]
-    ) -> list[IdentityDocumentImage]:
-        """
-        Method to shuffle the training data for each epoch.
-
-        Arguments:
-            training_data (list[IdentityDocumentImage]): A list of IdentityDocumentImage objects
-            representing the training data to be shuffled.
-
-        Returns:
-            list[IdentityDocumentImage]: A list of IdentityDocumentImage objects representing the 
-            shuffled training data.
-        """
-        return self.splitter.training_shuffle(training_data)
