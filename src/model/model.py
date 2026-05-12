@@ -35,9 +35,9 @@ from src.training.constants import (
     EARLY_STOPPING_PATIENCE,
     F1_SCORE,
     LOSS,
-    OPTIM_FACTOR,
-    OPTIM_MIN_LR,
-    OPTIM_PATIENCE,
+    SCHEDULER_FACTOR,
+    SCHEDULER_MIN_LR,
+    SCHEDULER_PATIENCE,
     PRECISION,
     RECALL,
 )
@@ -263,9 +263,9 @@ class Model:
             torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
                 mode='min',
-                factor=OPTIM_FACTOR,
-                patience=OPTIM_PATIENCE,
-                min_lr=OPTIM_MIN_LR,
+                factor=SCHEDULER_FACTOR,
+                patience=SCHEDULER_PATIENCE,
+                min_lr=SCHEDULER_MIN_LR,
             )
         )
 
