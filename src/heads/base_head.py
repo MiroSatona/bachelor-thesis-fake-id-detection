@@ -14,6 +14,7 @@ import torch.nn as nn
 
 from src.heads.constants import CLASSES_COUNT, DROPOUT_PRECENTAGE
 
+
 class BaseHead(ABC, nn.Module):
     """
     Base class for all the heads for classification of the extracted features.
