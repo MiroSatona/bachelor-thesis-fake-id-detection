@@ -3,7 +3,7 @@ Author: Martin Zůbek
 Date: 2026-04-01
 File: mlp_head.py
 Description: This file contains the implementation of the MLPHead class. 
-This class is used for classification of the extracted features using a multi-layer perceptron.
+This class is used for classification of the extracted features.
 """
 import torch
 import torch.nn as nn
@@ -14,7 +14,7 @@ from src.heads.constants import CLASSES_COUNT, DROPOUT_PRECENTAGE
 
 class MLPHead(BaseHead):
     """
-    Class for classification of the extracted features using a multi-layer perceptron.
+    Class for classification of the extracted features.
     
     Attributes:
         input_dimension (int): Dimension of the input feature vector.
