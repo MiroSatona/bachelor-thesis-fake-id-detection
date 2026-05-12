@@ -35,11 +35,11 @@ from src.training.constants import (
     EARLY_STOPPING_PATIENCE,
     F1_SCORE,
     LOSS,
+    PRECISION,
+    RECALL,
     SCHEDULER_FACTOR,
     SCHEDULER_MIN_LR,
     SCHEDULER_PATIENCE,
-    PRECISION,
-    RECALL,
 )
 from src.training.metrics import MetricsHandler
 from src.training.train_logger import TrainLogger
