@@ -53,7 +53,7 @@ TEST_CONFUSION_MATRIX_FILE_MATRIX_NAME: str = "test_confusion_matrix.png"
 EARLY_STOPPING_PATIENCE: int = 5
 EARLY_STOPPING_DELTA: float = 0.001 
 
-# Constants for learning rate optimization
-OPTIM_PATIENCE: int = 2
-OPTIM_FACTOR: float = 0.1
-OPTIM_MIN_LR: float = 1e-6
+# Constants for scheduler learning rate optimization
+SCHEDULER_PATIENCE: int = 2
+SCHEDULER_FACTOR: float = 0.1
+SCHEDULER_MIN_LR: float = 1e-6
