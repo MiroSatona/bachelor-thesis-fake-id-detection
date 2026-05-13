@@ -405,7 +405,7 @@ class Model:
         loss_function: torch.nn.CrossEntropyLoss,
     ) -> tuple[float, torch.Tensor, torch.Tensor]:
         """
-        Method for evaluating the classifier on pre-computed embeddings.
+        Method for evaluating the classifier on extracted embeddings.
 
         Arguments:
             embeddings_tensor (torch.Tensor): Tensor of embedding extracted from the data on CPU.
