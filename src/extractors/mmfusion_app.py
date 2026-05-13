@@ -6,7 +6,7 @@ Description: File contains the implementation of the MMFusionExtractorApp class 
 for extracting features from identity documents using the MMFusion model for the application.
 """
 
-import gc
+import gc  # noqa: I001
 
 import numpy
 import numpy.typing
@@ -14,10 +14,10 @@ import torch
 import torch.nn.functional
 import torchvision.transforms.functional
 
+from src.extractors.mmfusion import MMFusionExtractor
 from external.MMFusion.models.cmnext_conf import CMNeXtWithConf
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.constants import IMAGENET_MEAN, IMAGENET_STD
-from src.extractors.mmfusion import MMFusionExtractor
 
 
 class MMFusionExtractorApp(MMFusionExtractor):

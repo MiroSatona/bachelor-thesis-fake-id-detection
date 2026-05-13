@@ -3,8 +3,7 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: trufor.py
 Description: This file contains the implementation of the TruForExtractor class which as a wrapper 
-around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features from identity 
-document images.
+around the TruFor for extracting features from identity document images.
 """
 
 import sys
@@ -39,7 +38,7 @@ from src.extractors.constants import (
 
 class TruForExtractor(BaseExtractor):
     """
-    Class which is wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
+    Class which is wrapper around the TruFor for extracting features 
     from identity document images.
 
     Attributes:
@@ -137,7 +136,10 @@ class TruForExtractor(BaseExtractor):
         ) -> torch.Tensor:
         """
         Method for preprocessing the image of the identity document to a tensor which can be used 
-        as an input for the TruFor model.
+        as an input for the TruFor model. The preprocessing in this method is based on the 
+        preprocessing in the TruFor implementation, where the image is normalized to the range
+        [0,1] and the dimensions are reorganized from [Height, Width, Channels] 
+        to [Channels, Height, Width].
 
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation 
@@ -152,10 +154,6 @@ class TruForExtractor(BaseExtractor):
         identity_document_image: Image.Image = Image.open(identity_document.path).convert("RGB")
 
         # Normalize the image to interval [0, 1]
-        # TruFor needs this normalization, because the the NoisePrint++ was trained like this.
-        # REF: external/TruFor/TruFor_train_test/lib/models/cmx/builder_np_conf.py, line 265
-        #      and external/TruFor/TruFor_train_test/dataset/dataset_test.py, line 39
-        #      (App must be builded for get code which is referenced)
         noiseprint_convert: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
@@ -178,8 +176,9 @@ class TruForExtractor(BaseExtractor):
         using the TruFor model. In the first step, the image is processed through the NoisePrint++.
         The NoisePrint++ features are extracted using DnCNN and then extended to three channels.
         The original RGB features and the NoisePrint++ features are used as an input
-        to the TruFor Vision Transformer backbone. The final embedding vector is obtained
-        from the last stage of the backbone by applying global average pooling.
+        to the TruFor Vision Transformer encoder which is the backbone in the TruFor implementation. 
+        The final embedding vector is obtained from the last stage of the backbone by applying 
+        global average pooling.
 
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation 

@@ -3,8 +3,7 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: iml_vit.py
 Description: This file contains the implementation of the IMLViTExtractor class which as a wrapper 
-around the IML-ViT (Image Manipulation Localization via Vision Transformer) for extracting 
-features from identity document images.
+around the IML-ViT for extracting features from identity document images.
 """
 
 import sys
@@ -35,8 +34,8 @@ from src.extractors.constants import (
 
 class IMLViTExtractor(BaseExtractor):
     """
-    Class which is wrapper around the IML-ViT (Image Manipulation Localization via 
-    Vision Transformer) for extracting features from identity document images.
+    Class which is wrapper around the IML-ViT for 
+    extracting features from identity document images.
 
     Attributes:
         root_dir (Path): The root directory of the IML-ViT.
@@ -94,8 +93,6 @@ class IMLViTExtractor(BaseExtractor):
             )
 
         # Create the model with trained checkpoint
-        # REF: external/IML_VIT/Demo.ipynb — checkpoint loading section
-        #      (App must be builded for get code which is referenced)
         self.extractor_model: iml_vit_model = iml_vit_model(vit_pretrain_path=None)
 
         # Load the trained checkpoint
@@ -113,7 +110,13 @@ class IMLViTExtractor(BaseExtractor):
     ) -> torch.Tensor:
         """
         Method for processing the image of the identity document to a tensor which can be used
-        as an input for the IML-ViT model.
+        as an input for the IML-ViT model. The preprocesing in this method is based on the
+        preprocessing in the IML-ViT implementation, where the image is padded to the required
+        input size of 1024x1024 and cropped to the left-top region of this size. 
+        Then the image is normalized to [0, 1] and normalized using the ImageNet mean and 
+        standard deviation. The dimensions of the image are reorganized 
+        from [Height, Width, Channels] to [Channels, Height, Width] and a batch dimension 
+        is added.
 
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation
@@ -141,13 +144,6 @@ class IMLViTExtractor(BaseExtractor):
 
         # If the original size of the image is smaller than the input size of the IML-ViT model, 
         # will be padded with black pixels.
-        #
-        # This and other proccessing steps in this method are based
-        # on the code from the IML-ViT repository.
-        #
-        # REF: external/IML_VIT/utils/datasets.py
-        #      external/IML_VIT/utils/iml_transforms.py
-        #      (App must be builded for get code which is referenced)
         if target_width != image_width or target_height != image_height:
             padded_identity_document: Image.Image = Image.new(
                 "RGB", 
