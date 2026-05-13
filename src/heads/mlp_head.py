@@ -3,7 +3,7 @@ Author: Martin Zůbek
 Date: 2026-04-01
 File: mlp_head.py
 Description: This file contains the implementation of the MLPHead class. 
-This class is used for classification of the extracted features using a multi-layer perceptron.
+This class is used for classification of the extracted features.
 """
 import torch
 import torch.nn as nn
@@ -14,7 +14,7 @@ from src.heads.constants import CLASSES_COUNT, DROPOUT_PRECENTAGE
 
 class MLPHead(BaseHead):
     """
-    Class for classification of the extracted features using a multi-layer perceptron.
+    Class for classification of the extracted features.
     
     Attributes:
         input_dimension (int): Dimension of the input feature vector.
@@ -53,10 +53,10 @@ class MLPHead(BaseHead):
         # MLP classification head
         #
         # Architecture:
-        # 1) Linear layer for projects embedding from input_dimension
+        # 1) Linear layer projecting embedding from input_dimension
         # 2) GELU activation
         # 3) Dropout for regularization
-        # 4) Linear layer for maps to the classes
+        # 4) Linear layer mapping to the classes
         #    (positive identity document or fraudulent identity document)
         self.mlp_classification_head: nn.Sequential = nn.Sequential(
             nn.Linear(self.input_dimension, self.intermediate_dimension),

@@ -30,7 +30,7 @@ class BaseExtractor(ABC):
         """
         Constructor for the BaseExtractor class.
         
-        Args:
+        Arguments:
             gpu (bool): Flag for using GPU or CPU for feature extractors. Default is True.
             
         Returns:

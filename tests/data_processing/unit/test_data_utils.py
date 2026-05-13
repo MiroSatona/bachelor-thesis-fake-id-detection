@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: test_data_utils.py
 Description: Unit tests for the DataUtils class for utility functions.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path

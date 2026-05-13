@@ -19,7 +19,7 @@ dependencies = [
     "torch",
     "torchvision",
     "numpy",
-    "timm",   
+    "timm",
     "yacs",
     "pyyaml",
     "opencv-python",
@@ -28,6 +28,11 @@ dependencies = [
     "Pillow",
     "gdown",
     "matplotlib",
+    "PyQt5",
+]
+
+[project.optional-dependencies]
+dev = [
     "pytest",
     "mypy",
     "ruff",

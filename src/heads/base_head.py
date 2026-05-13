@@ -22,6 +22,7 @@ class BaseHead(ABC, nn.Module):
     Attributes:
     input_dimension (int): Dimension of the input feature vector.
     classification_classes_count (int): Number of classes for classification.
+    dropout_precentage (float): Dropout percentage for the MLP head.
     """
     def __init__(
             self,

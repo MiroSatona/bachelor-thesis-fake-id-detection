@@ -3,8 +3,7 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: swint.py
 Description: This file contains the implementation of SwinExtractor class which is a wrapper around
-the Swin Transformer (Microsoft/Swin-Transformer) for extracting features 
-from identity document images.
+the Swin Transformer for extracting features from identity document images.
 """
 
 import sys
@@ -35,7 +34,7 @@ from src.extractors.constants import (
 
 class SwinExtractor(BaseExtractor):
 	"""
-	Class which is a wrapper around the Swin Transformer (Microsoft/Swin-Transformer) for extracting
+	Class which is a wrapper around the Swin Transformer for extracting
 	features from identity document images.
 
 	Attributes:
@@ -107,8 +106,6 @@ class SwinExtractor(BaseExtractor):
 			sys.path.append(str(self.root_dir))
 
 		# Load the initial configuration for the Swin Transformer from the config file
-		# REF: external/SwinT/config.py — _C, _update_config_from_file
-		#      (App must be builded for get code which is referenced)
 		swint_config = config._C.clone()
 		config._update_config_from_file(swint_config, str(SWINT_CONFIG))
 
@@ -131,8 +128,6 @@ class SwinExtractor(BaseExtractor):
 		self.extractor_model = models.build_model(swint_config)
 
 		# Load the pretrained weights into the model
-		# REF: external/SwinT/utils.py
-		#      (App must be builded for get code which is referenced)   
 		checkpoint_path: str = swint_config.MODEL.PRETRAINED
 		checkpoint = torch.load(checkpoint_path, map_location="cpu")
 		self.extractor_model.load_state_dict(checkpoint["model"], strict=False)
@@ -152,8 +147,9 @@ class SwinExtractor(BaseExtractor):
 		identity_document: IdentityDocumentImage,
 	) -> torch.Tensor:
 		"""
-		Method for preprocessing the image of the identity document to a tensor which can be used
-		as an input for the Swin Transformer model.
+		Method for preprocessing the image of the identity document, which used the 
+		Swin Tranformer tranformation for the right preprocessing of the input 
+		identity document image for the Swin Transformer model.
 
 		Arguments:
 			identity_document (IdentityDocumentImage): The object for internal representation
@@ -219,7 +215,7 @@ class SwinExtractor(BaseExtractor):
 		with torch.no_grad():
 			embedding: torch.Tensor = swint.forward_features(image_tensor)
 
-		# Remove batch dimension to get the 768-dim feature vector
+		# Remove batch dimension to get the 768 dimensional feature vector
 		embedding_vector: torch.Tensor = embedding.squeeze(0)
 
 		return embedding_vector

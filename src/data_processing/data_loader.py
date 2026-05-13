@@ -140,7 +140,7 @@ class DataLoader:
             dataset_part_name: str = dataset_part.name
 
             # Get identity document images from the dataset part
-            for identity_document  in dataset_part.rglob("*"):
+            for identity_document in dataset_part.rglob("*"):
 
                 # Check if the file is a valid image file, if not, skip it
                 if not DataUtils.is_image(identity_document):

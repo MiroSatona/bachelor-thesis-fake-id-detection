@@ -153,22 +153,5 @@ class DatasetSplitter:
         # Check if there are any empty groups
         if empty_groups:
             raise ValueError(
-                f"No identity documents loaded for this groups: {', '.join(empty_groups)}"
+                f"No identity documents loaded for these groups: {', '.join(empty_groups)}"
             )
-
-    def training_shuffle(
-            self,
-            training_data: list[IdentityDocumentImage]
-    ) -> list[IdentityDocumentImage]:
-        """
-        Method for shuffling the training data for each epoch.
-
-        Arguments:
-            training_data (list[IdentityDocumentImage]): The training data to be shuffled.
-
-        Returns:
-            list[IdentityDocumentImage]: The shuffled training data.
-        """
-        shuffled_data: list[IdentityDocumentImage] = training_data.copy()
-        random.shuffle(shuffled_data)
-        return shuffled_data
