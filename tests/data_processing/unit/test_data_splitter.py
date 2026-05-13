@@ -4,6 +4,10 @@ Date: 2026-03-28
 File: test_data_splitter.py
 Description: Unit tests for the DatasetSplitter class for splitting identity documents 
 of the dataset.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path

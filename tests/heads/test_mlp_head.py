@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-04-01
 File: test_mlp_head.py
 Description: Unit tests for the MLPHead class.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from typing import cast
