@@ -3,9 +3,13 @@ Author: Martin Zůbek
 Date: 2026-04-02
 File: test_swint.py
 Description: Tests for the SwinExtractor class, which is a wrapper around the Swin Transformer 
-(Microsoft/Swin-Transformer) model for extracting features from identity document images. 
-The tests verify the correct usage of the Swin Transformer model and the integration 
-between the SwinT repository and this project.
+model for extracting features from identity document images. The tests verify the correct 
+usage of the Swin Transformer model and the integration between the SwinT repository and 
+this project.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path

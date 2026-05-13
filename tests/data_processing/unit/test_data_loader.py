@@ -4,6 +4,10 @@ Date: 2026-03-28
 File: test_data_loader.py
 Description: Unit tests for the DataLoader class for loading the dataset of identity documents 
 or single identity document images.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path

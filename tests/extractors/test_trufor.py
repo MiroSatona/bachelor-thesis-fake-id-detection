@@ -3,9 +3,13 @@ Author: Martin Zůbek
 Date: 2026-04-05
 File: test_trufor.py
 Description: Tests for the TruForExtractor class, which is a wrapper around the TruFor
-(CVPR 2023, grip-unina/TruFor) model for extracting features from identity document images.
-The tests verify the correct usage of the TruFor model and the integration
-between the TruFor repository and this project.
+model for extracting features from identity document images. The tests verify the 
+correct usage of the TruFor model and the integration between the TruFor repository
+and this project.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path

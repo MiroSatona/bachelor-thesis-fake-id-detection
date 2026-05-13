@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-04-03
 File: test_train_logger.py
 Description: Unit tests for the TrainLogger class.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 import json
