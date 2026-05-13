@@ -48,7 +48,7 @@ class AppModel:
         """
         self.loader: DataLoader | None = None
         # Initialize and load the extractor for the application
-        gpu:bool = torch.cuda.is_available()
+        gpu: bool = torch.cuda.is_available()
         self.extractor: MMFusionExtractorApp = MMFusionExtractorApp(gpu=gpu)
         self.extractor.load_extractor()
 

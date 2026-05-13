@@ -64,7 +64,7 @@ class MMFusionExtractor(BaseExtractor):
         self.root_dir: Path = self.root_dir / MMFUSION_NAME
         # Set source code directory of the MMFusion
         self.src_dir: Path = self.src_dir / MMFUSION_NAME
-        # Modality extractor for MMFusion model (Noseprint++, Bayar convolution and SRM filter)
+        # Modality extractor for MMFusion model (NoisePrint++, Bayar convolution and SRM filter)
         self.modal_extractor: ModalitiesExtractor | None = None
 
     def load_extractor(self) -> None:
@@ -184,7 +184,7 @@ class MMFusionExtractor(BaseExtractor):
                 Image.Resampling.LANCZOS
             )
 
-        # Normalize the pixel values by deviding by 256.0 to get values in the range [0, 1]
+        # Normalize the pixel values by dividing by 256.0 to get values in the range [0, 1]
         image_array: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
