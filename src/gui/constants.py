@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-04-10
 File: constants.py
 Description: This file contains the constants used in the gui module.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 # Minimum width of the application window in pixels

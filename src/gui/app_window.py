@@ -4,6 +4,10 @@ Date: 2026-04-10
 File: app_window.py
 Description: File containing the implementation of the AppWindow class which is responsible
 for creating GUI and calling the methods for classifying identity documents.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 

@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-04-10
 File: classify_runner.py
 Description: Background QThread for running model classification without blocking the UI.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 from pathlib import Path
