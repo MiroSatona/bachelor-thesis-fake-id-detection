@@ -3,8 +3,7 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: trufor.py
 Description: This file contains the implementation of the TruForExtractor class which as a wrapper 
-around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features from identity 
-document images.
+around the TruFor for extracting features from identity document images.
 """
 
 import sys
@@ -27,16 +26,19 @@ from external.TruFor.TruFor_train_test.lib.models.cmx.builder_np_conf import Enc
 from src.data_processing.identity_document import IdentityDocumentImage
 from src.extractors.base_extractor import BaseExtractor
 from src.extractors.constants import (
+    CPU,
     DEFAULT_USE_GPU,
+    TRUFOR_BACKBONE_WEIGHTS,
     TRUFOR_CONFIG,
     TRUFOR_NAME,
+    TRUFOR_NP_WEIGHTS,
     TRUFOR_SRC,
 )
 
 
 class TruForExtractor(BaseExtractor):
     """
-    Class which is wrapper around the TruFor (CVPR 2023, grip-unina/TruFor) for extracting features 
+    Class which is wrapper around the TruFor for extracting features 
     from identity document images.
 
     Attributes:
@@ -70,7 +72,8 @@ class TruForExtractor(BaseExtractor):
 
         Raise:
             RuntimeError: If the root directory, source directory, or configuration file 
-            of the TruFor does not exist.
+            of the TruFor does not exist, or if the pretrained weights for the NoisePrint++
+            or the backbone of the TruFor cannot be found.
 
         Returns:
             None
@@ -88,16 +91,39 @@ class TruForExtractor(BaseExtractor):
         # Check if the configuration file of the TruFor exists
         if not TRUFOR_CONFIG.exists():
             raise RuntimeError(f"Cannot find TruFor configuration file in {TRUFOR_CONFIG}.")
+        # Check if the NoisePrint++ weights file exists
+        if not TRUFOR_NP_WEIGHTS.exists():
+            raise RuntimeError(
+                f"Cannot find TruFor NoisePrint++ weights in {TRUFOR_NP_WEIGHTS}."
+            )
+        # Check if the backbone weights file exists
+        if not TRUFOR_BACKBONE_WEIGHTS.exists():
+            raise RuntimeError(
+                f"Cannot find TruFor backbone weights in {TRUFOR_BACKBONE_WEIGHTS}."
+            )
         
         # Unfreeze the configuration
         trufor_config.defrost()
         # Load the configuration from the file
         trufor_config.merge_from_file(str(TRUFOR_CONFIG))
+    
         # Freeze the configuration
         trufor_config.freeze()
 
         # Get the model from the TruFor repository
         self.extractor_model = EncoderDecoder(cfg=trufor_config)
+        trufor: EncoderDecoder = self.extractor_model
+
+        # Load the noiseprint weights 
+        noiseprint_weights: dict[str, torch.Tensor] = torch.load(
+            str(TRUFOR_NP_WEIGHTS), map_location=torch.device(CPU)
+        )["network"]
+
+        # Load the pretrained weights for the NoisePrint++ of the TruFor
+        trufor.dncnn.load_state_dict(noiseprint_weights)
+        # Load the pretrained weights for the backbone of the TruFor
+        trufor.backbone.init_weights(pretrained=str(TRUFOR_BACKBONE_WEIGHTS))
+
         # Move the model to the device
         self.extractor_model.to(self.device)
         # Set the model to evaluation mode
@@ -110,7 +136,10 @@ class TruForExtractor(BaseExtractor):
         ) -> torch.Tensor:
         """
         Method for preprocessing the image of the identity document to a tensor which can be used 
-        as an input for the TruFor model.
+        as an input for the TruFor model. The preprocessing in this method is based on the 
+        preprocessing in the TruFor implementation, where the image is normalized to the range
+        [0,1] and the dimensions are reorganized from [Height, Width, Channels] 
+        to [Channels, Height, Width].
 
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation 
@@ -125,10 +154,6 @@ class TruForExtractor(BaseExtractor):
         identity_document_image: Image.Image = Image.open(identity_document.path).convert("RGB")
 
         # Normalize the image to interval [0, 1]
-        # TruFor needs this normalization, because the the NoisePrint++ was trained like this.
-        # REF: external/TruFor/TruFor_train_test/lib/models/cmx/builder_np_conf.py, line 265
-        #      and external/TruFor/TruFor_train_test/dataset/dataset_test.py, line 39
-        #      (App must be builded for get code which is referenced)
         noiseprint_convert: npt.NDArray[numpy.float32] = (
             numpy.array(identity_document_image, dtype=numpy.float32) / 256.0
         )
@@ -151,8 +176,9 @@ class TruForExtractor(BaseExtractor):
         using the TruFor model. In the first step, the image is processed through the NoisePrint++.
         The NoisePrint++ features are extracted using DnCNN and then extended to three channels.
         The original RGB features and the NoisePrint++ features are used as an input
-        to the TruFor Vision Transformer backbone. The final embedding vector is obtained
-        from the last stage of the backbone by applying global average pooling.
+        to the TruFor Vision Transformer encoder which is the backbone in the TruFor implementation.
+        The final embedding vector is obtained from the last stage of the backbone by applying
+        global average pooling.
 
         Arguments:
             identity_document (IdentityDocumentImage): The object for internal representation 

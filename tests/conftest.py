@@ -3,6 +3,10 @@ Author: Martin Zůbek
 Date: 2026-03-28
 File: conftest.py
 Description: This file is used for pytest configuration of Python import paths.
+
+ACKNOWLEDGMENT:
+Parts of this code were generated with the assistance of GitHub Copilot
+and subsequently modified and adapted by the author.
 """
 
 import sys
