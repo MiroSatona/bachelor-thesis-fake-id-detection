@@ -176,8 +176,8 @@ class TruForExtractor(BaseExtractor):
         using the TruFor model. In the first step, the image is processed through the NoisePrint++.
         The NoisePrint++ features are extracted using DnCNN and then extended to three channels.
         The original RGB features and the NoisePrint++ features are used as an input
-        to the TruFor Vision Transformer encoder which is the backbone in the TruFor implementation. 
-        The final embedding vector is obtained from the last stage of the backbone by applying 
+        to the TruFor Vision Transformer encoder which is the backbone in the TruFor implementation.
+        The final embedding vector is obtained from the last stage of the backbone by applying
         global average pooling.
 
         Arguments:
