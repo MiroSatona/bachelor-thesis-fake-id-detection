@@ -69,7 +69,7 @@ class MMFusionExtractorApp(MMFusionExtractor):
 
         with torch.no_grad():
             # Extract the modality tensors using the modality extractor
-            modals_tensor:list[torch.Tensor] = self.modal_extractor(image_tensor)
+            modals_tensor: list[torch.Tensor] = self.modal_extractor(image_tensor)
 
             # Normalize the RGB image tensor using the ImageNet mean and standard deviation
             image_tensor_normalized: torch.Tensor = torchvision.transforms.functional.normalize(
@@ -89,7 +89,7 @@ class MMFusionExtractorApp(MMFusionExtractor):
             stages_output: list[torch.Tensor] = mmfusion.backbone(concatenated_input)
             del concatenated_input
 
-            # Global average pooling to get the embeding vector -> 512
+            # Global average pooling to get the embedding vector -> 512
             embedding: torch.Tensor = (
                 torch.mean(stages_output[-1], dim=[2, 3])
                 .squeeze(0)

@@ -53,10 +53,10 @@ class MLPHead(BaseHead):
         # MLP classification head
         #
         # Architecture:
-        # 1) Linear layer for projects embedding from input_dimension
+        # 1) Linear layer projecting embedding from input_dimension
         # 2) GELU activation
         # 3) Dropout for regularization
-        # 4) Linear layer for maps to the classes
+        # 4) Linear layer mapping to the classes
         #    (positive identity document or fraudulent identity document)
         self.mlp_classification_head: nn.Sequential = nn.Sequential(
             nn.Linear(self.input_dimension, self.intermediate_dimension),

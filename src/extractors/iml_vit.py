@@ -133,8 +133,6 @@ class IMLViTExtractor(BaseExtractor):
             identity_document_image: Image.Image = image.convert("RGB")
 
         # Get size of the image
-        image_width: int = 0    
-        image_height: int = 0
         image_width, image_height = identity_document_image.size
 
         # Get target size for the image which is the maximum of the original 
@@ -180,7 +178,7 @@ class IMLViTExtractor(BaseExtractor):
             dtype=numpy.float32
         )
 
-        # Uset the ImageNet mean and standard deviation to normalize the image
+        # Use the ImageNet mean and standard deviation to normalize the image
         preprocess_image: npt.NDArray[numpy.float32] = (image_array - imagenet_mean) / imagenet_std
 
         # Reorganize the dimensions from [Height, Width, Channels] to [Channels, Height, Width]
