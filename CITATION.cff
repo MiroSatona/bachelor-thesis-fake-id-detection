@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the bachelor's thesis below."
+title: "Application for Detecting Generated Fake ID Cards"
+type: software
+authors:
+  - family-names: "Zůbek"
+    given-names: "Martin"
+    affiliation: "Brno University of Technology, Faculty of Information Technology"
+repository-code: "https://github.com/MiroSatona/BP"
+url: "https://www.vut.cz/en/students/final-thesis/detail/169997"
+license: AGPL-3.0-only
+version: "1.0.0"
+keywords:
+  - identity document
+  - forgery detection
+  - digital forgery
+  - deep learning
+  - vision transformer
+  - transfer learning
+  - MMFusion
+  - TruFor
+  - IML-ViT
+  - Swin Transformer
+preferred-citation:
+  type: thesis
+  thesis-type: "Bachelor's thesis"
+  title: "Application for Detecting Generated Fake ID Cards"
+  authors:
+    - family-names: "Zůbek"
+      given-names: "Martin"
+  institution:
+    name: "Brno University of Technology, Faculty of Information Technology"
+    city: "Brno"
+    country: "CZ"
+  year: 2026
+  url: "https://www.vut.cz/en/students/final-thesis/detail/169997"
