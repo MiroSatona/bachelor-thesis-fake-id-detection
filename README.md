@@ -226,8 +226,8 @@ See [the full list](docs/USAGE.md#requirements).
 ### Run the application
 
 ```bash
-git clone https://github.com/MiroSatona/BP.git
-cd BP
+git clone https://github.com/MiroSatona/bachelor-thesis-fake-id-detection.git
+cd bachelor-thesis-fake-id-detection
 make build_app   # virtual environment, MMFusion and its weights
 make run_app     # start the GUI
 ```
