@@ -213,7 +213,7 @@ mypy_check:
 # Zipping the project for submission
 zip:
 	@echo "Zipping the project for submission."
-	@zip -r x253206.zip "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)" "$(CHECKPOINT_DIR)" "$(MAKEFILE)" "$(PYPROJECT)" "$(README)" "$(LICENSE)"
+	@zip -r submission.zip "$(SRC_DIR)" "$(SCRIPTS_DIR)" "$(TESTS_DIR)" "$(CHECKPOINT_DIR)" "$(MAKEFILE)" "$(PYPROJECT)" "$(README)" "$(LICENSE)"
 
 # Cleaning the project
 clean:
