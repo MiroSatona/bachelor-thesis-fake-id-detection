@@ -6,7 +6,7 @@ authors:
   - family-names: "Zůbek"
     given-names: "Martin"
     affiliation: "Brno University of Technology, Faculty of Information Technology"
-repository-code: "https://github.com/MiroSatona/BP"
+repository-code: "https://github.com/MiroSatona/bachelor-thesis-fake-id-detection"
 url: "https://www.vut.cz/en/students/final-thesis/detail/169997"
 license: AGPL-3.0-only
 version: "1.0.0"
