@@ -10,10 +10,12 @@ build-backend = "setuptools.build_meta"
 
 # Project metadata and dependencies
 [project]
-name = "x253206"
+name = "id-card-forgery-detection"
 version = "1.0.0"
-description = "Bachelor thesis"
+description = "Detection of digitally forged and AI-generated identity documents using vision-transformer feature extractors and an MLP head (Bachelor thesis, BUT FIT)."
 readme = "README.md"
+license = { text = "AGPL-3.0-only" }
+authors = [{ name = "Martin Zůbek" }]
 requires-python = ">=3.10"
 dependencies = [
     "torch",
